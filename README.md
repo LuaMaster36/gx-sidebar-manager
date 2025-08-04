@@ -25,7 +25,7 @@ A customizable sidebar extension for Opera GX and Chrome browsers that allows yo
 
 ## Installation
 
-###For users
+### For users
   1. Add the GX Sidebar Manager extension from the opera store [Extension link](#) *(add link when available)*
 ### For Testers
 1. Download the latest release from the [Releases page](#) *(add link when available)*
