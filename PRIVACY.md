@@ -61,5 +61,5 @@ For privacy concerns:
 
 **This extension complies with:**
 - Opera Add-ons Policies
-- Chrome Web Store Requirements
+- Opera Web Store Requirements
 - GDPR (for EU users)
