@@ -2,7 +2,7 @@
 
 A customizable sidebar extension for Opera GX and Chrome browsers that allows you to manage quick-access buttons with categories, keyboard shortcuts, and flexible opening modes.
 
-![Extension Screenshot](screenshot.png) *(Add a screenshot if available)*
+![Extension Screenshot](screenshot2.png) *(Add a screenshot if available)*
 
 ## Features
 
