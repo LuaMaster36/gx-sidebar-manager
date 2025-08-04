@@ -57,9 +57,9 @@ A customizable sidebar extension for Opera GX and Chrome browsers that allows yo
   - `webNavigation` - Detect start pages
 
 ## File Structure
-/
-├── icons/ - Extension icons in multiple sizes
-├── manifest.json - Extension configuration
+/\n
+├── icons/ - Extension icons in multiple sizes\n
+├── manifest.json - Extension configuration\n
 ├── options.html - Options page UI
 ├── options.js - Options page logic
 ├── panel.html - Sidebar UI
