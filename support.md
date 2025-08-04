@@ -52,24 +52,21 @@ Please include:
 4. Screenshots if relevant
 
 **Template**:
-```markdown
-**Issue**: [Brief description]
+**Issue**: [Brief description of the problem]
 
 **Steps to Reproduce**:
-1. 
-2. 
-3. 
+1. [First step]
+2. [Second step]
+3. [Third step]
 
-**Expected Behavior**:
+**Expected Behavior**: [What should happen]
 
-**Actual Behavior**:
+**Actual Behavior**: [What actually happens]
 
-**Screenshots**:
-![description](url-or-path.png)
+**Browser Version**: [e.g., Opera GX v101]
+**Extension Version**: [e.g., v1.3]
 
-**Browser Version**:
-**Extension Version**:
-```
+**Screenshots**: [If applicable]
 
 ## 💡 Feature Requests
 We welcome suggestions! Please:
