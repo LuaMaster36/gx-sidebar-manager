@@ -52,7 +52,7 @@ Please include:
 4. Screenshots if relevant
 
 **Template**:
-````markdown
+```markdown
 **Issue**: [Brief description]
 
 **Steps to Reproduce**:
@@ -69,7 +69,7 @@ Please include:
 
 **Browser Version**:
 **Extension Version**:
-````
+```
 
 ## 💡 Feature Requests
 We welcome suggestions! Please:
