@@ -52,7 +52,7 @@ Please include:
 4. Screenshots if relevant
 
 **Template**:
-```markdown
+```mg
 **Issue**:
 **Steps**:
 **Expected**:
