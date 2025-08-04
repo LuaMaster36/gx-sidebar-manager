@@ -1,2 +1,2 @@
 # Releases
-[v1.3](#)
+[GX Sidebar Manager - v1.3](#)
