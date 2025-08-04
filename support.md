@@ -52,21 +52,23 @@ Please include:
 4. Screenshots if relevant
 
 **Template**:
-**Issue**: [Brief description of the problem]
+```
+Issue: [Brief description of the problem]
 
-**Steps to Reproduce**:
+Steps to Reproduce:
 1. [First step]
 2. [Second step]
 3. [Third step]
 
-**Expected Behavior**: [What should happen]
+Expected Behavior: [What should happen]
 
-**Actual Behavior**: [What actually happens]
+Actual Behavior: [What actually happens]
 
-**Browser Version**: [e.g., Opera GX v101]
-**Extension Version**: [e.g., v1.3]
+Browser Version: [e.g., Opera GX v101]
+Extension Version: [e.g., v1.3]
 
-**Screenshots**: [If applicable]
+Screenshots: [If applicable]
+```
 
 ## 💡 Feature Requests
 We welcome suggestions! Please:
