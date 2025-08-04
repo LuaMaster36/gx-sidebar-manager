@@ -25,15 +25,17 @@ A customizable sidebar extension for Opera GX and Chrome browsers that allows yo
 
 ## Installation
 
-### For Users
+###For users
+  1. Add the GX Sidebar Manager extension from the opera store [Extension link](#) *(add link when available)*
+### For Testers
 1. Download the latest release from the [Releases page](#) *(add link when available)*
-2. In Opera/Chrome, go to `opera://extensions` or `chrome://extensions`
+2. In Opera, go to `opera://extensions`
 3. Enable "Developer mode"
 4. Drag and drop the `.crx` file or load the unpacked extension
 
 ### For Developers
 1. Clone this repository
-2. In Opera/Chrome, go to `opera://extensions` or `chrome://extensions`
+2. In Opera, go to `opera://extensions`
 3. Enable "Developer mode"
 4. Click "Load unpacked" and select the repository folder
 
