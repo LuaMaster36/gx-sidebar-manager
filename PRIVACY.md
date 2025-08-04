@@ -1,6 +1,6 @@
 # Privacy Policy for GX Sidebar Manager
 
-**Last Updated**: [8/3/2025]
+**Last Updated**: [8/4/2025]
 
 ## 1. Data Collection
 
@@ -49,7 +49,7 @@ We do not:
 Updates will be:
 - Posted here with changed dates
 - Noted in extension update logs
-- Available at: [GitHub Repository URL]
+- Available at: [PRIVACY.md](PRIVACY.md)
 
 ## 7. Contact
 
