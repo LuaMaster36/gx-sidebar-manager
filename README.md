@@ -65,3 +65,25 @@ A customizable sidebar extension for Opera GX and Chrome browsers that allows yo
 ├── panel.js - Sidebar logic
 └── sw.js - Service worker (background script)
 
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+## Known Issues
+
+- Sidebar API availability varies by browser
+- Favicon fetching may fail on some websites
+
+## License
+
+[MIT License](LICENSE)
+
+---
+
+**Disclaimer**: This extension is Opera GX only. Cross-browser compatibility is yet to be finsihed.
