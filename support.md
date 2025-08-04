@@ -36,12 +36,12 @@
 ## ❓ FAQ
 
 ### Q: Can I use this in Firefox?
-**A**: No - uses Chrome-specific APIs like `sidePanel`
+**A**: No - uses Opera-specific APIs like `sidePanel`
 
 ### Q: How to export my buttons?
 **A**: Currently not supported - data is stored locally in browser storage
 
-### Q: Why can't I delete the General category?
+### Q: Why can't I delete the All category?
 **A**: This is a protected default category
 
 ## 🐛 Reporting Bugs
@@ -52,13 +52,24 @@ Please include:
 4. Screenshots if relevant
 
 **Template**:
-```mg
-**Issue**:
-**Steps**:
-**Expected**:
-**Actual**:
+````markdown
+**Issue**: [Brief description]
+
+**Steps to Reproduce**:
+1. 
+2. 
+3. 
+
+**Expected Behavior**:
+
+**Actual Behavior**:
+
 **Screenshots**:
-```
+![description](url-or-path.png)
+
+**Browser Version**:
+**Extension Version**:
+````
 
 ## 💡 Feature Requests
 We welcome suggestions! Please:
