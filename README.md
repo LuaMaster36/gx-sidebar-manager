@@ -1,0 +1,1 @@
+# gx-sidebar-manager
