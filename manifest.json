@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "GX Sidebar Manager",
+  "version": "1.3",
+  "permissions": ["storage", "tabs", "bookmarks", "activeTab", "webNavigation", "sidePanel"],
+  "host_permissions": [
+    "https://t0.gstatic.com/",
+    "https://external-content.duckduckgo.com/",
+    "https://www.google.com/"
+  ],
+  "action": {
+    "default_icon": {
+      "16": "icons/16.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    },
+    "default_title": "Sidebar Manager",
+    "default_popup": "panel.html"
+  },
+  "sidebar_action": {
+    "default_icon": {
+      "19": "icons/19.png",
+      "38": "icons/38.png"
+    },
+    "default_title": "Sidebar Manager",
+    "default_panel": "panel.html"
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "background": {
+    "service_worker": "sw.js"
+  },
+  "minimum_opera_version": "89.0",
+  "commands": {
+    "_execute_sidebar_action": {
+      "suggested_key": { 
+        "default": "Alt+Shift+S" 
+      },
+      "description": "Open the sidebar"
+    },
+    "quick-access-1": {
+      "suggested_key": {
+        "default": "Alt+1"
+      },
+      "description": "Quick access button 1"
+    },
+    "quick-access-2": {
+      "suggested_key": {
+        "default": "Alt+2"
+      },
+      "description": "Quick access button 2"
+    }
+  }
+}
