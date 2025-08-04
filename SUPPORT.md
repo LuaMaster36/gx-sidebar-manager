@@ -45,7 +45,8 @@
 **A**: This is a protected default category
 
 ## 🐛 Reporting Bugs
-Report [here](https://github.com/LuaMaster36/gx-sidebar-manager/issuse).
+Report [here](https://github.com/LuaMaster36/gx-sidebar-manager/issuse)
+
 Please include:
 1. Browser version
 2. Exact steps to reproduce
