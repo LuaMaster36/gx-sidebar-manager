@@ -1,6 +1,6 @@
 # Privacy Policy for GX Sidebar Manager
 
-**Last Updated**: [Date]
+**Last Updated**: [8/3/2025]
 
 ## 1. Data Collection
 
