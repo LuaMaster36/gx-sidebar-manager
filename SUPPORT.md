@@ -44,6 +44,9 @@
 ### Q: Why can't I delete the All category?
 **A**: This is a protected default category
 
+### Q: Can I add more than 2 quick access shortcuts?
+**A**: Currently not supported - the 2 shortcuts are hardcoded
+
 ## 🐛 Reporting Bugs
 Report [here](https://github.com/LuaMaster36/gx-sidebar-manager/issues).
 
