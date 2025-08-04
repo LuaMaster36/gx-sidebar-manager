@@ -54,8 +54,8 @@ Updates will be:
 ## 7. Contact
 
 For privacy concerns:
-- Email: privacy@yourdomain.com
-- GitHub Issues: [Your Repo URL]/issues
+- Email: gxsidebarmanager@gmail.com
+- GitHub Issues: https://github.com/LuaMaster36/gx-sidebar-manager/issues
 
 ---
 
