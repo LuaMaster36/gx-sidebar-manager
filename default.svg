@@ -1,0 +1,43 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with subtle gradient -->
+  <circle cx="256" cy="256" r="248" fill="url(#gradient)"/>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DC2626"/>
+      <stop offset="100%" stop-color="#B91C1C"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sidebar panel with depth -->
+  <g transform="translate(128 128)">
+    <!-- Main panel -->
+    <rect x="0" y="0" width="256" height="256" rx="12" fill="#F9FAFB" fill-opacity="0.9"/>
+    
+    <!-- Sidebar -->
+    <rect x="0" y="0" width="72" height="256" rx="12" fill="white"/>
+    
+    <!-- Icons --> 
+    <g fill="#DC2626" transform="translate(20 20)">
+      <!-- First icon -->
+      <rect x="0" y="0" width="32" height="32" rx="6"/>
+      <rect x="8" y="8" width="16" height="16" fill="white"/>
+      
+      <!-- Second icon -->
+      <rect x="0" y="52" width="32" height="32" rx="6"/>
+      <circle cx="16" cy="68" r="8" fill="white"/>
+      
+      <!-- Third icon -->
+      <rect x="0" y="104" width="32" height="32" rx="6"/>
+      <path d="M16 112L24 124H8L16 112Z" fill="white"/>
+    </g>
+    
+    <!-- Content area indicator -->
+    <rect x="92" y="92" width="144" height="72" rx="8" fill="#E5E7EB"/>
+    <rect x="108" y="108" width="112" height="40" rx="4" fill="white"/>
+  </g>
+  
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="248" fill="none" stroke="white" stroke-width="8"/>
+</svg>
