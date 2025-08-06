@@ -55,6 +55,73 @@
     margin-bottom: 20px;
   }
   
+  .theme-select {
+    background: var(--gx-bg);
+    color: var(--gx-text);
+    border: 2px solid var(--gx-border);
+    border-radius: 30px;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .theme-select:hover {
+    border-color: var(--gx-accent);
+  }
+
+  .toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .toggle-slider {
+    position: relative;
+    width: 50px;
+    height: 24px;
+    background: var(--gx-card);
+    border: 2px solid var(--gx-border);
+    border-radius: 34px;
+    transition: .4s;
+  }
+
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 2px;
+    background-color: var(--gx-text);
+    transition: .4s;
+    border-radius: 50%;
+  }
+
+  #speedDialToggle {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  #speedDialToggle:checked + .toggle-slider {
+    background-color: var(--gx-accent);
+    border-color: var(--gx-accent);
+  }
+
+  #speedDialToggle:checked + .toggle-slider:before {
+    transform: translateX(22px);
+    background-color: var(--gx-bg);
+  }
+
+  .toggle-container small {
+    display: block;
+    margin-top: 5px;
+    color: var(--gx-secondary);
+    font-size: 12px;
+  }
+  
   label {
     display: block;
     margin-bottom: 8px;
@@ -80,7 +147,7 @@
   
   input:focus, select:focus {
     border-color: var(--gx-accent);
-    box-shadow: 0 0 0 3px rgba(255, 121, 198, 0.3);
+    box-shadow: 0 0 0 3px rgba(var(--gx-accent-rgb), 0.3);
   }
   
   .file-label {
@@ -96,7 +163,7 @@
   
   .file-label:hover, .file-label.drag-over {
     border-color: var(--gx-accent);
-    background: rgba(255, 121, 198, 0.05);
+    background: rgba(var(--gx-accent-rgb), 0.05);
   }
   
   #icon {
@@ -146,7 +213,7 @@
   }
   
   button:hover {
-    background: #ff5cad;
+    background: var(--gx-accent-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
@@ -171,7 +238,7 @@
   
   .drop-zone:hover, .drop-zone.drag-over {
     border-color: var(--gx-accent);
-    background: rgba(255, 121, 198, 0.05);
+    background: rgba(var(--gx-accent-rgb), 0.05);
   }
   
   .drop-zone p {
@@ -261,8 +328,8 @@
   }
   
   .remove-btn:hover {
-    color: #ff5cad;
-    background: rgba(255, 121, 198, 0.1);
+    color: var(--gx-accent-hover);
+    background: rgba(var(--gx-accent-rgb), 0.1);
     border-radius: 50%;
   }
   
@@ -281,7 +348,7 @@
   
   li.dragging {
     opacity: 0.5;
-    background: rgba(45, 45, 68, 0.5);
+    background: rgba(var(--gx-card-rgb), 0.5);
   }
   
   li.drag-over {
@@ -371,7 +438,7 @@
   }
   
   .btn-primary:hover {
-    background: #ff5cad;
+    background: var(--gx-accent-hover);
   }
   
   .btn-secondary {
@@ -384,7 +451,7 @@
     border-color: var(--gx-accent);
   }
   
-  .error-icon {
+  .status-icon {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
@@ -392,7 +459,7 @@
     font-size: 48px;
   }
   
-  .error-message {
+  .status-message {
     text-align: center;
     font-size: 16px;
     margin-bottom: 20px;
@@ -421,7 +488,7 @@
   
   .category-select:focus {
     border-color: var(--gx-accent);
-    box-shadow: 0 0 0 3px rgba(255, 121, 198, 0.3);
+    box-shadow: 0 0 0 3px rgba(var(--gx-accent-rgb), 0.3);
     outline: none;
   }
   
@@ -448,7 +515,7 @@
   
   .mode-select:focus {
     border-color: var(--gx-accent);
-    box-shadow: 0 0 0 3px rgba(255, 121, 198, 0.3);
+    box-shadow: 0 0 0 3px rgba(var(--gx-accent-rgb), 0.3);
     outline: none;
   }
   
@@ -477,7 +544,7 @@
   
   .category-item.dragging {
     opacity: 0.5;
-    background: rgba(45, 45, 68, 0.5);
+    background: rgba(var(--gx-card-rgb), 0.5);
   }
   
   .category-item.drag-over {
@@ -506,53 +573,91 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  
   .quick-access-buttons {
-  display: flex;
-  gap: 5px;
-  flex-shrink: 0;
-}
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+  }
 
-.assign-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--gx-bg);
-  border: 2px solid var(--gx-border);
-  color: var(--gx-text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 0;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.2s ease;
-}
+  .assign-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--gx-bg);
+    border: 2px solid var(--gx-border);
+    color: var(--gx-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 0;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+  }
 
-.assign-btn.assigned {
-  background: var(--gx-accent);
-  border-color: var(--gx-accent);
-  color: var(--gx-bg);
-}
+  .assign-btn.assigned {
+    background: var(--gx-accent);
+    border-color: var(--gx-accent);
+    color: var(--gx-bg);
+  }
 
-.assign-btn:hover {
-  border-color: var(--gx-accent);
-  transform: scale(1.1);
-}
+  .assign-btn:hover {
+    border-color: var(--gx-accent);
+    transform: scale(1.1);
+  }
+  
+  #exportBtn, #importBtn {
+    background: var(--gx-secondary);
+    border: none;
+    color: var(--gx-bg);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0;
+  }
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+  #exportBtn:hover, #importBtn:hover {
+    background: var(--gx-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--gx-accent);
-  border-radius: 4px;
-}
+  #exportBtn {
+    background: var(--gx-success);
+  }
 
-::-webkit-scrollbar-track {
-  background: var(--gx-card);
-  border-radius: 4px;
-}
+  #importBtn {
+    background: var(--gx-secondary);
+  }
+
+  .status-icon.question {
+    color: var(--gx-secondary);
+  }
+
+  #confirmModal .modal-footer {
+    justify-content: space-between;
+  }
+
+  #confirmModal .modal-btn {
+    flex: 1;
+    margin: 0 5px;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--gx-accent);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--gx-card);
+    border-radius: 4px;
+  }
 </style>
 </head>
 <body>
@@ -614,6 +719,30 @@
     
     <button type="submit" id="addButton">Add Button</button>
     
+    <div class="section-title">Appearance</div>
+
+    <div class="form-group">
+      <label for="theme">Theme</label>
+      <select id="theme" class="theme-select">
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="toggle-container">
+        <span>Replace Speed Dial</span>
+        <input type="checkbox" id="speedDialToggle">
+        <span class="toggle-slider"></span>
+      </label>
+      <small>New Tab buttons will replace the current tab if it's a speed dial/new tab page</small>
+    </div>
+
+    <div class="section-title">Backup & Restore</div>
+    
+    <div class="form-group" style="display: flex; gap: 10px;">
+      <button type="button" id="exportBtn" style="flex: 1;">Export Settings</button>
+      <button type="button" id="importBtn" style="flex: 1;">Import Settings</button>
+    </div>
+
     <div class="section-title">Quick Actions</div>
     
     <div class="drop-zone" id="dropZone">
@@ -655,12 +784,28 @@
       </div>
     </div>
   </div>
-  
+
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Confirm</h3>
+      </div>
+      <div class="modal-body">
+        <div class="status-icon">❓</div>
+        <div class="status-message" id="confirmMessage"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn btn-secondary" id="confirmCancel">Cancel</button>
+        <button class="modal-btn btn-primary" id="confirmOK">OK</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="errorModal">
     <div class="modal-content">
       <div class="modal-body">
-        <div class="error-icon">⚠️</div>
-        <div class="error-message" id="errorMessage"></div>
+        <div class="status-icon" id="statusIcon">⚠️</div>
+        <div class="status-message" id="statusMessage"></div>
       </div>
       <div class="modal-footer">
         <button class="modal-btn btn-primary" id="closeError">OK</button>

@@ -15,6 +15,53 @@ let draggedIndex = null;
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
+function loadThemeOptions() {
+  chrome.storage.local.get(['theme', 'speedDial'], (result) => {
+    const themeSelect = document.getElementById('theme');
+    const speedDialToggle = document.getElementById('speedDialToggle');
+    
+    const manifest = chrome.runtime.getManifest();
+    const themes = manifest.theme_colors || [];
+    
+    themeSelect.innerHTML = '';
+    themes.forEach(theme => {
+      const option = document.createElement('option');
+      option.value = theme.name;
+      option.textContent = theme.name;
+      themeSelect.appendChild(option);
+    });
+    
+    if (result.theme) {
+      themeSelect.value = result.theme;
+    }
+    
+    if (result.speedDial) {
+      speedDialToggle.checked = result.speedDial;
+    }
+    
+    themeSelect.addEventListener('change', (e) => {
+      const themeName = e.target.value;
+      const theme = themes.find(t => t.name === themeName);
+      
+      if (theme) {
+        chrome.storage.local.set({ theme: themeName }, () => {
+          applyTheme(theme.colors);
+        });
+      }
+    });
+
+    speedDialToggle.addEventListener('change', (e) => {
+      chrome.storage.local.set({ speedDial: e.target.checked });
+    });
+  });
+}
+
+function applyTheme(colors) {
+  const root = document.documentElement;
+  Object.entries(colors).forEach(([key, value]) => {
+    root.style.setProperty(`--gx-${key}`, value);
+  });
+}
 
 function findBookmarkByUrl(tree, url) {
   for (const node of tree) {
@@ -34,6 +81,59 @@ function loadButtons() {
     renderButtons(result.buttons || []);
     renderCategories(result.categories || ['General']);
   });
+}
+function exportSettings() {
+  chrome.storage.local.get(null, (data) => {
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gx-sidebar-settings-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+}
+
+function importSettings() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        
+        if (!data.buttons || !Array.isArray(data.buttons)) {
+          throw new Error('Invalid settings file format');
+        }
+        
+        const confirmed = await openConfirm('This will overwrite your current settings. Continue?');
+        if (confirmed) {
+          chrome.storage.local.clear(() => {
+            chrome.storage.local.set(data, () => {
+              showSuccess('Settings imported successfully!');
+              loadButtons();
+              loadThemeOptions();
+            });
+          });
+        }
+      } catch (error) {
+        showError('Error importing settings: ' + error.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  
+  input.click();
 }
 
 function renderButtons(buttons) {
@@ -206,7 +306,6 @@ saveCategory.addEventListener('click', () => {
     chrome.storage.local.set({ categories: newCategories }, () => {
       renderCategories(newCategories);
       
-      // Update all category dropdowns
       document.querySelectorAll('.category-select').forEach(select => {
         populateCategoryDropdown(select);
       });
@@ -310,8 +409,53 @@ manageCategoriesModal.addEventListener('click', (e) => {
 });
 
 function showError(message) {
-  errorMessage.textContent = message;
+  const icon = document.getElementById('statusIcon');
+  const msg = document.getElementById('statusMessage');
+  
+  icon.textContent = '⚠️';
+  msg.textContent = message;
   errorModal.classList.add('active');
+}
+
+function showSuccess(message) {
+  const icon = document.getElementById('statusIcon');
+  const msg = document.getElementById('statusMessage');
+  
+  icon.textContent = '✅';
+  msg.textContent = message;
+  errorModal.classList.add('active');
+}
+
+function openConfirm(message) {
+  return new Promise((resolve) => {
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmOK = document.getElementById('confirmOK');
+    const confirmCancel = document.getElementById('confirmCancel');
+    
+    confirmMessage.textContent = message;
+    
+    confirmModal.classList.add('active');
+    
+    const cleanUp = () => {
+      confirmModal.classList.remove('active');
+      confirmOK.removeEventListener('click', onConfirm);
+      confirmCancel.removeEventListener('click', onCancel);
+    };
+    
+    const onConfirm = () => {
+      cleanUp();
+      resolve(true);
+    };
+    
+    const onCancel = () => {
+      cleanUp();
+      resolve(false);
+    };
+    
+    confirmOK.addEventListener('click', onConfirm);
+    confirmCancel.addEventListener('click', onCancel);
+  });
 }
 
 closeError.addEventListener('click', () => {
@@ -703,4 +847,18 @@ dropZone.addEventListener('drop', (e) => {
   }
 });
 
+document.getElementById('exportBtn').addEventListener('click', exportSettings);
+document.getElementById('importBtn').addEventListener('click', importSettings);
+
 loadButtons();
+loadThemeOptions();
+
+chrome.storage.local.get(['theme'], (result) => {
+  if (result.theme) {
+    const manifest = chrome.runtime.getManifest();
+    const theme = manifest.theme_colors.find(t => t.name === result.theme);
+    if (theme) {
+      applyTheme(theme.colors);
+    }
+  }
+});

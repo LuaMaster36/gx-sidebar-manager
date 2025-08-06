@@ -8,6 +8,50 @@
     "https://external-content.duckduckgo.com/",
     "https://www.google.com/"
   ],
+  "theme_colors": [
+    {
+      "name": "GX Purple",
+      "colors": {
+        "bg": "#1e1e2e",
+        "card": "#2d2d44",
+        "accent": "#ff79c6",
+        "text": "#e0e0ff",
+        "border": "#4a4a7a",
+        "hover": "#3a3a5a",
+        "secondary": "#bd93f9",
+        "success": "#50fa7b",
+        "error": "#ff5555"
+      }
+    },
+    {
+      "name": "GX Teal",
+      "colors": {
+        "bg": "#1e2e2e",
+        "card": "#2d4444",
+        "accent": "#79ffc6",
+        "text": "#e0ffff",
+        "border": "#4a7a7a",
+        "hover": "#3a5a5a",
+        "secondary": "#93f9f9",
+        "success": "#50faf7",
+        "error": "#55ffff"
+      }
+    },
+    {
+      "name": "GX Red",
+      "colors": {
+        "bg": "#2e1e1e",
+        "card": "#442d2d",
+        "accent": "#ff7979",
+        "text": "#ffe0e0",
+        "border": "#7a4a4a",
+        "hover": "#5a3a3a",
+        "secondary": "#f99393",
+        "success": "#fa5050",
+        "error": "#ff5555"
+      }
+    }
+  ],
   "action": {
     "default_icon": {
       "16": "icons/16.png",

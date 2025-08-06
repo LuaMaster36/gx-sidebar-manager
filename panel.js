@@ -9,6 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
   let quickAccess = {};
   let selectedCategory = 'All';
   
+  async function getSpeedDial() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get('speedDial', (result) => {
+        resolve(result.speedDial || false);
+      });
+    });
+  }
+
   const isStartPage = (url) => {
     return (
       url === 'about:blank' ||
@@ -19,6 +27,25 @@ document.addEventListener('DOMContentLoaded', () => {
       url.startsWith('chrome://startpage')
     );
   };
+
+  function applyTheme(colors) {
+    const root = document.documentElement;
+    Object.entries(colors).forEach(([key, value]) => {
+      root.style.setProperty(`--gx-${key}`, value);
+    });
+  }
+
+  function renderTheme() {
+    chrome.storage.local.get(['theme'], (result) => {
+      if (result.theme) {
+        const manifest = chrome.runtime.getManifest();
+        const theme = manifest.theme_colors.find(t => t.name === result.theme);
+        if (theme) {
+          applyTheme(theme.colors);
+        }
+      }
+    });
+  }
 
   function renderButtons() {
     container.innerHTML = '';
@@ -97,9 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleButtonClick(button) {
     switch (button.mode) {
       case 'tab':
-         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+         chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
           if (tabs[0]) {
-            if (isStartPage(tabs[0].url)) {
+            const speedDial = await getSpeedDial();
+            if (isStartPage(tabs[0].url) && speedDial) {
               chrome.tabs.update(tabs[0].id, { url: button.url });
             } else {
               chrome.tabs.create({ url: button.url });
@@ -180,10 +208,16 @@ document.addEventListener('DOMContentLoaded', () => {
       quickAccess = changes.quickAccess.newValue || {};
       renderButtons();
     }
+    if (changes.theme) {
+      renderTheme();
+      renderButtons();
+      renderCategories();
+    }
   });
   
   searchInput.addEventListener('input', renderButtons);
   searchMode.addEventListener('change', renderButtons);
   
+  renderTheme();
   loadData();
 });

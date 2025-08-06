@@ -4,228 +4,231 @@
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'">
   <title>GX Sidebar Manager</title>
+
   <style>
-    :root {
-      --gx-bg: #1e1e2e;
-      --gx-card: #2d2d44;
-      --gx-accent: #ff79c6;
-      --gx-text: #e0e0ff;
-      --gx-border: #4a4a7a;
-      --gx-hover: #3a3a5a;
-      --gx-secondary: #bd93f9;
-      --gx-success: #50fa7b;
-    }
-    
-    body, html { 
-      margin: 0; 
-      padding: 0; 
-      height: 100%;
-      background: var(--gx-bg);
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      color: var(--gx-text);
-      overflow: hidden;
-    }
-    
-    #container {
-      padding: 15px;
-      height: calc(100% - 30px);
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .search-container {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-      position: relative;
-    }
-    
-    #search {
-      flex-grow: 1;
-      padding: 10px 15px;
-      border-radius: 30px;
-      border: 2px solid var(--gx-border);
-      background: var(--gx-card);
-      color: var(--gx-text);
-      font-size: 14px;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-    
-    #search:focus {
-      border-color: var(--gx-accent);
-      box-shadow: 0 0 0 3px rgba(255, 121, 198, 0.3);
-    }
-    
-    #searchMode {
-      padding: 0 15px;
-      border-radius: 30px;
-      border: 2px solid var(--gx-border);
-      background: var(--gx-card);
-      color: var(--gx-text);
-      cursor: pointer;
-      outline: none;
-    }
-    
-    #searchMode:hover {
-      border-color: var(--gx-accent);
-    }
-    
-    .categories {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 15px;
-      overflow-x: auto;
-      padding-bottom: 5px;
-      flex-wrap: wrap;
-    }
-    
-    .category-btn {
-      padding: 6px 15px;
-      border-radius: 30px;
-      background: var(--gx-card);
-      border: 2px solid var(--gx-border);
-      color: var(--gx-text);
-      font-size: 13px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-    }
-    
-    .category-btn.active {
-      background: var(--gx-accent);
-      border-color: var(--gx-accent);
-      color: var(--gx-bg);
-      font-weight: bold;
-    }
-    
-    .category-btn:hover {
-      border-color: var(--gx-accent);
-    }
-    
-    #buttonContainer {
-      flex-grow: 1;
-      overflow-y: auto;
-      padding-right: 5px;
-    }
-    
-    .button {
-      display: flex;
-      align-items: center;
-      padding: 12px;
-      margin-bottom: 10px;
-      border-radius: 12px;
-      background: var(--gx-card);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: 2px solid transparent;
-    }
-    
-    .button:hover {
-      background: var(--gx-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      border-color: var(--gx-border);
-    }
-    
-    .button img {
-      width: 36px;
-      height: 36px;
-      margin-right: 15px;
-      border-radius: 8px;
-      object-fit: cover;
-      background: var(--gx-bg);
-      padding: 4px;
-      border: 1px solid var(--gx-border);
-    }
-    
-    .button-info {
-      flex-grow: 1;
-      min-width: 0;
-    }
-    
-    .button-info strong {
-      display: block;
-      font-weight: 700;
-      font-size: 15px;
-      margin-bottom: 4px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    
-    .button-info small {
-      color: var(--gx-secondary);
-      font-size: 12px;
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    
-    .button-mode {
-      background: var(--gx-bg);
-      color: var(--gx-secondary);
-      border-radius: 30px;
-      padding: 4px 10px;
-      font-size: 11px;
-      font-weight: bold;
-      border: 1px solid var(--gx-border);
-      margin-left: 10px;
-      white-space: nowrap;
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--gx-secondary);
-    }
-    
-    .empty-state h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
-      color: var(--gx-accent);
-    }
-    
-    .empty-state p {
-      margin: 0;
-      font-size: 14px;
-    }
-    .quick-access-indicators {
-      display: flex;
-      gap: 3px;
-      margin-left: 10px;
-    }
+  :root {
+    --gx-bg: #1e1e2e;
+    --gx-card: #2d2d44;
+    --gx-accent: #ff79c6;
+    --gx-text: #e0e0ff;
+    --gx-border: #4a4a7a;
+    --gx-hover: #3a3a5a;
+    --gx-secondary: #bd93f9;
+    --gx-success: #50fa7b;
+    --gx-error: #ff5555;
+  }
+  
+  body, html { 
+    margin: 0; 
+    padding: 0; 
+    height: 100%;
+    background: var(--gx-bg);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: var(--gx-text);
+    overflow: hidden;
+  }
+  
+  #container {
+    padding: 15px;
+    height: calc(100% - 30px);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .search-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    position: relative;
+  }
+  
+  #search {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border-radius: 30px;
+    border: 2px solid var(--gx-border);
+    background: var(--gx-card);
+    color: var(--gx-text);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+  
+  #search:focus {
+    border-color: var(--gx-accent);
+    box-shadow: 0 0 0 3px rgba(var(--gx-accent-rgb), 0.3);
+  }
+  
+  #searchMode {
+    padding: 0 15px;
+    border-radius: 30px;
+    border: 2px solid var(--gx-border);
+    background: var(--gx-card);
+    color: var(--gx-text);
+    cursor: pointer;
+    outline: none;
+  }
+  
+  #searchMode:hover {
+    border-color: var(--gx-accent);
+  }
+  
+  .categories {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    flex-wrap: wrap;
+  }
+  
+  .category-btn {
+    padding: 6px 15px;
+    border-radius: 30px;
+    background: var(--gx-card);
+    border: 2px solid var(--gx-border);
+    color: var(--gx-text);
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  
+  .category-btn.active {
+    background: var(--gx-accent);
+    border-color: var(--gx-accent);
+    color: var(--gx-bg);
+    font-weight: bold;
+  }
+  
+  .category-btn:hover {
+    border-color: var(--gx-accent);
+  }
+  
+  #buttonContainer {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+  
+  .button {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    background: var(--gx-card);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+  
+  .button:hover {
+    background: var(--gx-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-color: var(--gx-border);
+  }
+  
+  .button img {
+    width: 36px;
+    height: 36px;
+    margin-right: 15px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--gx-bg);
+    padding: 4px;
+    border: 1px solid var(--gx-border);
+  }
+  
+  .button-info {
+    flex-grow: 1;
+    min-width: 0;
+  }
+  
+  .button-info strong {
+    display: block;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .button-info small {
+    color: var(--gx-secondary);
+    font-size: 12px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .button-mode {
+    background: var(--gx-bg);
+    color: var(--gx-secondary);
+    border-radius: 30px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: bold;
+    border: 1px solid var(--gx-border);
+    margin-left: 10px;
+    white-space: nowrap;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gx-secondary);
+  }
+  
+  .empty-state h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    color: var(--gx-accent);
+  }
+  
+  .empty-state p {
+    margin: 0;
+    font-size: 14px;
+  }
+  
+  .quick-access-indicators {
+    display: flex;
+    gap: 3px;
+    margin-left: 10px;
+  }
 
-    .quick-indicator {
-      background: var(--gx-accent);
-      color: var(--gx-bg);
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: bold;
-    }
+  .quick-indicator {
+    background: var(--gx-accent);
+    color: var(--gx-bg);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+  }
 
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: var(--gx-accent);
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: var(--gx-card);
-      border-radius: 4px;
-    }
-  </style>
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--gx-accent);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--gx-card);
+    border-radius: 4px;
+  }
+</style>
 </head>
 <body>
   <div id="container">
