@@ -44,7 +44,7 @@
 ### Q: Can I use this in Firefox?
 **A**: No - uses Opera-specific APIs like `sidePanel`
 
-### Q: How to add custom themes.
+### Q: How to add custom themes?
 **A**: Currently not supported - coming in the near future
 
 ### Q: Why can't I delete the All category?
