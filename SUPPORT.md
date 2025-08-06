@@ -44,8 +44,8 @@
 ### Q: Can I use this in Firefox?
 **A**: No - uses Opera-specific APIs like `sidePanel`
 
-### Q: How to export my buttons?
-**A**: Currently not supported - data is stored locally in browser storage
+### Q: How to add custom themes.
+**A**: Currently not supported - coming in the near future
 
 ### Q: Why can't I delete the All category?
 **A**: This is a protected default category
