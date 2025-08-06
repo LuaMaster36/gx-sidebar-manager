@@ -27,6 +27,12 @@
    - Click "Remove" then reinstall
 2. Ensure no storage limits are reached
 ```
+### 2. Constant Error About "theme_colors"
+**Fix**:
+```steps
+1. There is no current fix, although these errors do not affect the extension
+2. It is recommended to ignore them
+```
 
 ### 3. Icons Not Loading
 **Troubleshooting**:
