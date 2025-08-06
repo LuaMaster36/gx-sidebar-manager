@@ -12,11 +12,12 @@ A customizable sidebar extension for Opera GX and Chrome browsers that allows yo
 - ⌨ **Keyboard Shortcuts**:
   - `Alt+Shift+S`: Open/close sidebar
   - `Alt+1`/`Alt+2`: Quick access to assigned buttons
-- 🌈 **Customizable UI**: Dark theme with accent colors matching Opera GX
+- 🌈 **Customizable UI**: Mutiple themes matching Opera GX's accent colors 
 - 🔄 **Multiple Opening Modes**:
   - New Tab
   - Current Tab
   - Popup Window
+- ⚒️ **Cross-Device Sync**: Export/import settings
 - 📌 **Drag & Drop**:
   - Reorder buttons
   - Add new buttons from bookmarks or open tabs
