@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GX Sidebar Manager",
-  "version": "1.3",
+  "version": "1.8",
   "permissions": ["storage", "tabs", "bookmarks", "activeTab", "webNavigation", "sidePanel"],
   "host_permissions": [
     "https://t0.gstatic.com/",
@@ -10,7 +10,7 @@
   ],
   "theme_colors": [
     {
-      "name": "GX Purple",
+      "name": "Dark Mode - GX Purple",
       "colors": {
         "bg": "#1e1e2e",
         "card": "#2d2d44",
@@ -24,7 +24,7 @@
       }
     },
     {
-      "name": "GX Teal",
+      "name": "Dark Mode - GX Teal",
       "colors": {
         "bg": "#1e2e2e",
         "card": "#2d4444",
@@ -38,7 +38,7 @@
       }
     },
     {
-      "name": "GX Red",
+      "name": "Dark Mode - GX Red",
       "colors": {
         "bg": "#2e1e1e",
         "card": "#442d2d",
@@ -49,6 +49,146 @@
         "secondary": "#f99393",
         "success": "#fa5050",
         "error": "#ff5555"
+      }
+    },
+    {
+      "name": "Dark Mode - Midnight Black",
+      "colors": {
+        "bg": "#121212",
+        "card": "#1e1e1e",
+        "accent": "#bb86fc",
+        "text": "#e1e1e1",
+        "border": "#333333",
+        "hover": "#2a2a2a",
+        "secondary": "#03dac6",
+        "success": "#4caf50",
+        "error": "#cf6679"
+      }
+    },
+    {
+      "name": "Dark Mode - Deep Ocean",
+      "colors": {
+        "bg": "#0a192f",
+        "card": "#172a45",
+        "accent": "#64ffda",
+        "text": "#ccd6f6",
+        "border": "#1f4068",
+        "hover": "#233554",
+        "secondary": "#1e90ff",
+        "success": "#4ade80",
+        "error": "#ff6b6b"
+      }
+    },
+    {
+      "name": "Dark Mode - Dracula",
+      "colors": {
+        "bg": "#282a36",
+        "card": "#44475a",
+        "accent": "#ff79c6",
+        "text": "#f8f8f2",
+        "border": "#6272a4",
+        "hover": "#383a59",
+        "secondary": "#bd93f9",
+        "success": "#50fa7b",
+        "error": "#ff5555"
+      }
+    },
+    {
+      "name": "Dark Mode - Cyberpunk",
+      "colors": {
+        "bg": "#1a1a2e",
+        "card": "#16213e",
+        "accent": "#f72585",
+        "text": "#e2e2e2",
+        "border": "#4a4e69",
+        "hover": "#0f3460",
+        "secondary": "#00f5d4",
+        "success": "#38b000",
+        "error": "#ff0054"
+      }
+    },
+    {
+      "name": "Dark Mode - Amber Dark",
+      "colors": {
+        "bg": "#1a120b",
+        "card": "#3c2a21",
+        "accent": "#d5cea3",
+        "text": "#e5e5cb",
+        "border": "#65451f",
+        "hover": "#4e3620",
+        "secondary": "#eab308",
+        "success": "#65a30d",
+        "error": "#dc2626"
+      }
+    },
+    {
+      "name": "Light Mode - Solar Light",
+      "colors": {
+        "bg": "#fdf6e3",
+        "card": "#eee8d5",
+        "accent": "#268bd2",
+        "text": "#586e75",
+        "border": "#93a1a1",
+        "hover": "#e0d6bd",
+        "secondary": "#2aa198",
+        "success": "#859900",
+        "error": "#dc322f"
+      }
+    },
+    {
+      "name": "Light Mode - Polar Light",
+      "colors": {
+        "bg": "#f8f9fa",
+        "card": "#e9ecef",
+        "accent": "#4361ee",
+        "text": "#212529",
+        "border": "#ced4da",
+        "hover": "#dee2e6",
+        "secondary": "#7209b7",
+        "success": "#4cc9f0",
+        "error": "#f72585"
+      }
+    },
+    {
+      "name": "Light Mode - Mint Fresh",
+      "colors": {
+        "bg": "#f0fff4",
+        "card": "#e6ffed",
+        "accent": "#38a169",
+        "text": "#2d3748",
+        "border": "#c6f6d5",
+        "hover": "#c6f6d5",
+        "secondary": "#319795",
+        "success": "#38a169",
+        "error": "#e53e3e"
+      }
+    },
+    {
+      "name": "Light Mode - Cotton Candy",
+      "colors": {
+        "bg": "#faf5ff",
+        "card": "#f3e8ff",
+        "accent": "#d946ef",
+        "text": "#581c87",
+        "border": "#e9d5ff",
+        "hover": "#e9d5ff",
+        "secondary": "#a855f7",
+        "success": "#10b981",
+        "error": "#ef4444"
+      }
+    },
+    {
+      "name": "Light Mode - Sky Light",
+      "colors": {
+        "bg": "#f0f9ff",
+        "card": "#e0f2fe",
+        "accent": "#0369a1",
+        "text": "#0c4a6e",
+        "border": "#bae6fd",
+        "hover": "#bae6fd",
+        "secondary": "#0ea5e9",
+        "success": "#059669",
+        "error": "#dc2626"
       }
     }
   ],
@@ -79,24 +219,28 @@
     "service_worker": "sw.js"
   },
   "minimum_opera_version": "89.0",
-  "commands": {
+    "commands": {
     "_execute_sidebar_action": {
-      "suggested_key": { 
-        "default": "Alt+Shift+S" 
+      "suggested_key": {
+        "default": "Alt+Shift+S"
       },
       "description": "Open the sidebar"
     },
-    "quick-access-1": {
+    "custom_shortcut_1": {
       "suggested_key": {
         "default": "Alt+1"
       },
-      "description": "Quick access button 1"
-    },
-    "quick-access-2": {
+      "description": "Custom Shortcut 1"
+    },"custom_shortcut_2": {
       "suggested_key": {
         "default": "Alt+2"
       },
-      "description": "Quick access button 2"
+      "description": "Custom Shortcut 2"
+    },"custom_shortcut_3": {
+      "suggested_key": {
+        "default": "Alt+3"
+      },
+      "description": "Custom Shortcut 3"
     }
   }
 }

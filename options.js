@@ -10,12 +10,43 @@ const iconInput = document.getElementById('icon');
 const errorModal = document.getElementById('errorModal');
 const errorMessage = document.getElementById('errorMessage');
 const closeError = document.getElementById('closeError');
+const buttonSearch = document.getElementById('buttonSearch');
+const buttonSearchMode = document.getElementById('buttonSearchMode');
+const editModal = document.getElementById('editModal');
+const editTitle = document.getElementById('editTitle');
+const editUrl = document.getElementById('editUrl');
+const editIcon = document.getElementById('editIcon');
+const editIconPreview = document.getElementById('editIconPreview');
+const editIconDropZone = document.getElementById('editIconDropZone');
+const saveEdit = document.getElementById('saveEdit');
+const cancelEdit = document.getElementById('cancelEdit');
+const MAX_SHORTCUTS = 3;
+const colorInputs = [
+  'customBg', 'customCard', 'customAccent', 'customText', 
+  'customBorder', 'customHover', 'customSecondary', 'customSuccess', 'customError'
+];
+let isRecordingShortcut = false;
+let currentRecordingElement = null;
+let currentShortcutKeys = [];
+let currentShortcutToAssign = null;
+const modifierKeys = ['Control', 'Shift', 'Alt', 'Meta'];
+const numberKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", 
+                   "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", 
+                   "Digit6", "Digit7", "Digit8", "Digit9", "Digit0",
+                   "Numpad1", "Numpad2", "Numpad3", "Numpad4", "Numpad5",
+                   "Numpad6", "Numpad7", "Numpad8", "Numpad9", "Numpad0"];
+let allButtons = [];
+let currentCommandShortcuts = {};
 let draggedIndex = null;
+let customThemes = [];
+let isEditingTheme = false;
+let currentEditingThemeName = '';
+let currentlyEditingIndex = null;
 
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
-function loadThemeOptions() {
+async function loadThemeOptions() {
   chrome.storage.local.get(['theme', 'speedDial'], (result) => {
     const themeSelect = document.getElementById('theme');
     const speedDialToggle = document.getElementById('speedDialToggle');
@@ -38,15 +69,20 @@ function loadThemeOptions() {
     if (result.speedDial) {
       speedDialToggle.checked = result.speedDial;
     }
-    
-    themeSelect.addEventListener('change', (e) => {
+
+    themeSelect.addEventListener('change', async (e) => {
       const themeName = e.target.value;
-      const theme = themes.find(t => t.name === themeName);
+      const success = await validateAndApplyTheme(themeName);
       
-      if (theme) {
-        chrome.storage.local.set({ theme: themeName }, () => {
-          applyTheme(theme.colors);
-        });
+      if (!success) {
+        showError('Selected theme not found');
+        // Revert to default theme
+        const manifest = chrome.runtime.getManifest();
+        if (manifest.theme_colors.length > 0) {
+          document.getElementById('theme').value = manifest.theme_colors[0].name;
+          await chrome.storage.local.set({ theme: manifest.theme_colors[0].name });
+          applyTheme(manifest.theme_colors[0].colors);
+        }
       }
     });
 
@@ -54,6 +90,8 @@ function loadThemeOptions() {
       chrome.storage.local.set({ speedDial: e.target.checked });
     });
   });
+
+  await updateThemeDropdown();
 }
 
 function applyTheme(colors) {
@@ -76,12 +114,22 @@ function findBookmarkByUrl(tree, url) {
   return null;
 }
 
-function loadButtons() {
-  chrome.storage.local.get({ buttons: [], categories: ['General', 'Social', 'Work', 'Gaming'] }, (result) => {
-    renderButtons(result.buttons || []);
-    renderCategories(result.categories || ['General']);
-  });
+async function loadButtons() {
+  const [storage, shortcuts] = await Promise.all([
+    chrome.storage.local.get({ 
+      buttons: [], 
+      categories: ['General', 'Social', 'Work', 'Gaming'] 
+    }),
+    getCurrentCommandShortcuts()
+  ]);
+  
+  currentCommandShortcuts = shortcuts;
+  allButtons = storage.buttons || [];
+  renderButtons(allButtons);
+  renderCategories(storage.categories || ['General']);
+  renderShortcuts();
 }
+
 function exportSettings() {
   chrome.storage.local.get(null, (data) => {
     
@@ -139,6 +187,23 @@ function importSettings() {
 function renderButtons(buttons) {
   buttonList.innerHTML = '';
   
+  var buttonsEmpty = buttons.length === 0;
+
+  const searchTerm = buttonSearch.value.toLowerCase();
+  if (searchTerm) {
+    const mode = buttonSearchMode.value;
+    buttons = buttons.filter(btn => 
+      mode === 'name' 
+        ? btn.title.toLowerCase().includes(searchTerm)
+        : btn.url.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  if (!buttonsEmpty && (!buttons || buttons.length === 0)) {
+    buttonList.innerHTML = '<li style="justify-content: center; padding: 20px;">No buttons found</li>';
+    return;
+  }
+
   if (!buttons || buttons.length === 0) {
     buttonList.innerHTML = '<li style="justify-content: center; padding: 20px;">No buttons added yet</li>';
     return;
@@ -165,13 +230,9 @@ function renderButtons(buttons) {
         <select class="category-select" data-index="${i}">
           <!-- Categories will be populated by JS -->
         </select>
-        <div class="quick-access-buttons">
-          <button class="assign-btn ${quickAccess[1] === btn.id ? 'assigned' : ''}" 
-                  data-index="${i}" data-slot="1">1</button>
-          <button class="assign-btn ${quickAccess[2] === btn.id ? 'assigned' : ''}" 
-                  data-index="${i}" data-slot="2">2</button>
-        </div>
-        <button class="remove-btn" data-index="${i}">&times;</button>
+        <button class="edit-btn" data-index="${i}" title="Edit">✎</button>
+        <button class="duplicate-btn" data-index="${i}" title="Duplicate">🗐</button>
+        <button class="remove-btn" data-index="${i}" title="Delete">&times;</button>
       `;
       
       li.addEventListener('dragstart', handleDragStart);
@@ -252,6 +313,592 @@ function renderCategories(categories) {
     option.textContent = category;
     categorySelect.appendChild(option);
   });
+}
+
+async function renderShortcuts() {
+  const [storage, currentShortcuts] = await Promise.all([
+    chrome.storage.local.get(['shortcutAssignments', 'buttons']),
+    getCurrentCommandShortcuts()
+  ]);
+  
+  const assignments = storage.shortcutAssignments || {};
+  const buttons = storage.buttons || [];
+  
+  // Clear and rebuild the shortcuts list
+  const buttonShortcutsList = document.getElementById('buttonShortcutsList');
+  buttonShortcutsList.innerHTML = '';
+
+  // Update sidebar shortcut display
+  // const sidebarShortcutDisplay = document.getElementById('sidebarShortcut');
+  // sidebarShortcutDisplay.textContent = currentShortcuts.sidebar?.key || 'Not set';
+
+  // Render each slot
+  for (let slot = 1; slot <= MAX_SHORTCUTS; slot++) {
+    const shortcutItem = document.createElement('div');
+    shortcutItem.className = 'shortcut-item';
+    shortcutItem.dataset.slot = slot;
+
+    const shortcutDisplay = document.createElement('button');
+    shortcutDisplay.className = 'shortcut-display';
+    
+    // Find button assigned to this slot
+    const [buttonId] = Object.entries(assignments).find(([, assignedSlot]) => assignedSlot == slot) || [];
+    const button = buttons.find(b => b.id === buttonId);
+    const shortcutKey = currentShortcuts.custom[slot]?.key;
+
+    if (button) {
+      shortcutDisplay.textContent = `Slot ${slot} - ${button.title} (${shortcutKey || 'Not set'})`;
+      shortcutDisplay.title = `${button.url}`;
+    } else {
+      shortcutDisplay.textContent = `Slot ${slot} - Not assigned (${shortcutKey || 'Not set'})`;
+      shortcutDisplay.title = `Click to assign a button`;
+    }
+
+    shortcutDisplay.addEventListener('click', () => prepareShortcutAssignment(slot));
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.innerHTML = '&times;';
+    removeBtn.dataset.slot = slot;
+    removeBtn.addEventListener('click', removeShortcut);
+    
+    shortcutItem.appendChild(shortcutDisplay);
+    shortcutItem.appendChild(removeBtn);
+    buttonShortcutsList.appendChild(shortcutItem);
+  }
+}
+
+function prepareShortcutAssignment(slot) {
+  currentShortcutToAssign = slot;
+  const select = document.getElementById('shortcutButtonSelect');
+  select.innerHTML = '';
+  
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.textContent = 'Select a button...';
+  select.appendChild(defaultOption);
+ 
+  allButtons.forEach(button => {
+    const option = document.createElement('option');
+    option.value = button.id;
+    option.textContent = `${button.title} (${button.url})`;
+    select.appendChild(option);
+  });
+  
+  document.getElementById('shortcutAssignment').style.display = 'block';
+}
+
+document.getElementById('assignShortcutBtn').addEventListener('click', async () => {
+  const buttonId = document.getElementById('shortcutButtonSelect').value;
+  if (!buttonId) return;
+  
+  const slot = currentShortcutToAssign;
+
+  chrome.storage.local.get(['shortcutAssignments'], async (result) => {
+    const assignments = result.shortcutAssignments || {};
+    
+    // Remove any existing assignment for this button
+    if (assignments[buttonId]) {
+      delete assignments[buttonId];
+    }
+    
+    // Remove any existing assignment for this slot
+    Object.keys(assignments).forEach(id => {
+      if (assignments[id] == slot) {
+        delete assignments[id];
+      }
+    });
+
+    // Assign the button to this slot
+    assignments[buttonId] = slot;
+    
+    await chrome.storage.local.set({ shortcutAssignments: assignments });
+    renderShortcuts();
+    document.getElementById('shortcutAssignment').style.display = 'none';
+  });
+});
+
+async function getCurrentCommandShortcuts() {
+  return new Promise((resolve) => {
+    chrome.commands.getAll(commands => {
+      const shortcuts = {
+        sidebar: null,
+        custom: {}
+      };
+      
+      commands.forEach(command => {
+        if (command.name === '_execute_action') {
+          shortcuts.sidebar = {
+            key: command.shortcut,
+            name: command.name
+          };
+          console.log(command.shortcut);
+        } else if (command.name.startsWith('custom_shortcut_')) {
+          const slot = command.name.replace('custom_shortcut_', '');
+          shortcuts.custom[slot] = {
+            key: command.shortcut,
+            name: command.name
+          };
+        }
+      });
+      resolve(shortcuts);
+    });
+  });
+}
+
+function migrateShortcutAssignments() {
+  chrome.storage.local.get(['shortcuts', 'shortcutAssignments'], (result) => {
+    if (result.shortcuts && !result.shortcutAssignments) {
+      const newAssignments = {};
+      Object.entries(result.shortcuts).forEach(([buttonId, shortcut]) => {
+        const slot = shortcut.match(/(\d+)$/)?.[1];
+        if (slot) {
+          newAssignments[buttonId] = slot;
+        }
+      });
+      chrome.storage.local.set({ 
+        shortcutAssignments: newAssignments,
+        shortcuts: {}  // Clear old format
+      }, () => {
+        renderShortcuts();
+      });
+    }
+  });
+}
+
+// let recordingTimeout;
+
+// function startRecordingShortcut(e) {
+//   if (isRecordingShortcut) return;
+  
+//   isRecordingShortcut = true;
+//   currentRecordingElement = e.currentTarget;
+//   currentShortcutKeys = [];
+  
+//   currentRecordingElement.classList.add('recording');
+//   currentRecordingElement.textContent = '...';
+  
+//   recordingTimeout = setTimeout(() => {
+//     if (isRecordingShortcut) {
+//       showError('Recording timed out');
+//       stopRecordingShortcut();
+//     }
+//   }, 7000);
+  
+//   document.addEventListener('keydown', handleShortcutKeyDown);
+//   document.addEventListener('keyup', handleShortcutKeyUp);
+// }
+
+// function stopRecordingShortcut() {
+//   if (!isRecordingShortcut) return;
+  
+//   clearTimeout(recordingTimeout);
+//   isRecordingShortcut = false;
+//   currentRecordingElement.classList.remove('recording');
+  
+//   document.removeEventListener('keydown', handleShortcutKeyDown);
+//   document.removeEventListener('keyup', handleShortcutKeyUp);
+
+//   renderShortcuts();
+// }
+
+// function handleShortcutKeyDown(e) {
+//   e.preventDefault();
+  
+//   if (!isRecordingShortcut) return;
+  
+//   // Count current modifiers
+//   const currentModifiers = currentShortcutKeys.filter(k => modifierKeys.includes(k));
+  
+//   // Don't allow more than 2 modifiers
+//   if (modifierKeys.includes(e.key) && currentModifiers.length >= 2) return;
+  
+//   // Only allow modifier keys and number keys
+//   if (!modifierKeys.includes(e.key) && !numberKeys.includes(e.code)) return;
+  
+//   // Don't allow duplicate keys
+//   if (currentShortcutKeys.includes(e.key) || currentShortcutKeys.includes(e.code)) return;
+  
+//   numberKeys.includes(e.code) ? currentShortcutKeys.push(e.code): currentShortcutKeys.push(e.key)
+//   updateShortcutDisplay();
+  
+//   if (numberKeys.includes(e.code)) {
+//     setTimeout(() => {
+//       if (isRecordingShortcut) {
+//         saveShortcut();
+//       }
+//     }, 300);
+//   }
+// }
+
+// function handleShortcutKeyUp(e) {
+//   if (!isRecordingShortcut) return;
+//   e.preventDefault();
+  
+//   if (!modifierKeys.includes(e.key) && !numberKeys.includes(e.code)) return;
+
+//   saveShortcut();
+// }
+
+// function saveShortcut() {
+//   if (currentShortcutKeys.length === 0) {
+//     stopRecordingShortcut();
+//     return;
+//   }
+
+//   const hasModifier = currentShortcutKeys.some(k => modifierKeys.includes(k));
+//   const hasNumber = currentShortcutKeys.some(k => numberKeys.includes(k));
+  
+//   if (!hasModifier || !hasNumber) {
+//     showError('Shortcut requires at least one modifier key and one number key');
+//     currentShortcutKeys = [];
+//     renderShortcuts();
+//     stopRecordingShortcut();
+//     return;
+//   }
+
+//   const shortcut = formatShortcutKeys(currentShortcutKeys);
+//   const buttonId = document.getElementById('shortcutButtonSelect').value;
+  
+//   if (!buttonId) {
+//     showError('No button selected for shortcut');
+//     return;
+//   }
+
+//   chrome.storage.local.get(['shortcuts'], (result) => {
+//     const shortcuts = result.shortcuts || {};
+    
+//     Object.keys(shortcuts).forEach(key => {
+//       if (shortcuts[key] === shortcut) {
+//         delete shortcuts[key];
+//       }
+//     });
+    
+//     Object.keys(shortcuts).forEach(key => {
+//       if (key === buttonId) {
+//         delete shortcuts[key];
+//       }
+//     });
+    
+//     // Add the new shortcut
+//     shortcuts[buttonId] = shortcut;
+    
+//     chrome.storage.local.set({ shortcuts }, () => {
+//       const commandName = getCommandNameForShortcut(shortcut);
+//       if (commandName) {
+//         chrome.commands.update({
+//           [commandName]: { shortcut: shortcut }
+//         });
+//       }
+//       renderShortcuts();
+//       stopRecordingShortcut();
+//     });
+//   });
+// }
+
+// function formatShortcutKeys(keys) {
+//   const modifiers = keys.filter(k => modifierKeys.includes(k));
+//   const numbers = keys.filter(k => numberKeys.includes(k));
+  
+//   modifiers.sort((a, b) => {
+//     const order = ['Control', 'Alt', 'Shift', 'Meta'];
+//     return order.indexOf(a) - order.indexOf(b);
+//   });
+  
+//   const number = numbers.length > 0 ? codeToNumberKey(numbers[0]): "";
+  
+//   return [...modifiers, number]
+//     .map(key => {
+//       if (key === 'Meta') return 'Cmd';
+//       return key;
+//     })
+//     .join('+');
+// }
+
+// function codeToNumberKey(code) {
+//   if (code.startsWith('Digit')) {
+//     return code.replace('Digit', '');
+//   }
+  
+//   if (code.startsWith('Numpad')) {
+//     return code.replace('Numpad', '');
+//   }
+//   return null;
+// }
+
+// function updateShortcutDisplay() {
+//   let displayText = formatShortcutKeys(currentShortcutKeys);
+  
+//   currentRecordingElement.textContent = displayText || '...';
+//   currentRecordingElement.title = 'Press modifier keys (Ctrl, Alt, Shift) then a number';
+// }
+
+// function getCommandNameForShortcut(shortcut) {
+//   const match = shortcut.match(/(\d+)$/);
+//   return match ? `custom_shortcut_${match[1]}` : null;
+// }
+
+async function removeShortcut(e) {
+  e.stopPropagation();
+  const slot = e.currentTarget.dataset.slot;
+
+  chrome.storage.local.get(['shortcutAssignments'], async (result) => {
+    const assignments = result.shortcutAssignments || {};
+    
+    // Remove any assignment for this slot
+    Object.keys(assignments).forEach(buttonId => {
+      if (assignments[buttonId] == slot) {
+        delete assignments[buttonId];
+      }
+    });
+    
+    await chrome.storage.local.set({ shortcutAssignments: assignments });
+    renderShortcuts();
+  });
+}
+
+function openCustomThemeCreator() {
+  document.getElementById('customThemeModal').classList.add('active');
+  resetCustomThemeForm();
+  updateThemePreview();
+  loadCustomThemeList();
+}
+
+function closeCustomThemeModal() {
+  document.getElementById('customThemeModal').classList.remove('active');
+  isEditingTheme = false;
+  currentEditingThemeName = '';
+}
+
+function resetCustomThemeForm() {
+  document.getElementById('customThemeName').value = '';
+  document.getElementById('customBg').value = '#1e1e2e';
+  document.getElementById('customCard').value = '#2d2d44';
+  document.getElementById('customAccent').value = '#ff79c6';
+  document.getElementById('customText').value = '#e0e0ff';
+  document.getElementById('customBorder').value = '#4a4a7a';
+  document.getElementById('customHover').value = '#3a3a5a';
+  document.getElementById('customSecondary').value = '#bd93f9';
+  document.getElementById('customSuccess').value = '#50fa7b';
+  document.getElementById('customError').value = '#ff5555';
+}
+
+function updateThemePreview() {
+  const preview = document.getElementById('fullPagePreview');
+  
+  // Update CSS variables for the preview
+  preview.style.setProperty('--preview-bg', document.getElementById('customBg').value);
+  preview.style.setProperty('--preview-card', document.getElementById('customCard').value);
+  preview.style.setProperty('--preview-accent', document.getElementById('customAccent').value);
+  preview.style.setProperty('--preview-text', document.getElementById('customText').value);
+  preview.style.setProperty('--preview-border', document.getElementById('customBorder').value);
+  preview.style.setProperty('--preview-hover', document.getElementById('customHover').value);
+  preview.style.setProperty('--preview-secondary', document.getElementById('customSecondary').value);
+  preview.style.setProperty('--preview-success', document.getElementById('customSuccess').value);
+  preview.style.setProperty('--preview-error', document.getElementById('customError').value);
+}
+
+async function loadCustomThemeList() {
+  const { customThemes: themes = [] } = await chrome.storage.local.get('customThemes');
+  const themeList = document.getElementById('customThemeList');
+  themeList.innerHTML = '';
+  
+  if (themes.length === 0) {
+    themeList.innerHTML = '<p style="text-align: center; color: var(--gx-secondary);">No custom themes yet</p>';
+    return;
+  }
+  
+  themes.forEach(theme => {
+    const themeItem = document.createElement('div');
+    themeItem.className = 'theme-item';
+    themeItem.innerHTML = `
+      <div>
+        <strong>${theme.name}</strong>
+        <div style="display: flex; gap: 5px; margin-top: 5px;">
+          <div style="width: 15px; height: 15px; background: ${theme.colors.bg}; border: 1px solid ${theme.colors.border};"></div>
+          <div style="width: 15px; height: 15px; background: ${theme.colors.card}; border: 1px solid ${theme.colors.border};"></div>
+          <div style="width: 15px; height: 15px; background: ${theme.colors.accent}; border: 1px solid ${theme.colors.border};"></div>
+        </div>
+      </div>
+      <div class="theme-item-actions">
+        <button class="theme-item-btn edit" data-theme="${theme.name}">Edit</button>
+        <button class="theme-item-btn delete" data-theme="${theme.name}">Delete</button>
+      </div>
+    `;
+    themeList.appendChild(themeItem);
+  });
+  
+  // Add event listeners for edit and delete buttons
+  document.querySelectorAll('.theme-item-btn.edit').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      editCustomTheme(e.target.dataset.theme);
+      document.querySelector('.theme-tab[data-tab="create"]').click();
+    });
+  });
+  
+  document.querySelectorAll('.theme-item-btn.delete').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const confirmed = await openConfirm(`Delete theme "${e.target.dataset.theme}"?`);
+      if (confirmed) {
+        deleteCustomTheme(e.target.dataset.theme);
+      }
+    });
+  });
+}
+
+async function editCustomTheme(themeName) {
+  const { customThemes = [] } = await chrome.storage.local.get('customThemes');
+  const theme = customThemes.find(t => t.name === themeName);
+  
+  if (theme) {
+    isEditingTheme = true;
+    currentEditingThemeName = themeName;
+    
+    document.getElementById('customThemeName').value = theme.name;
+    document.getElementById('customBg').value = theme.colors.bg;
+    document.getElementById('customCard').value = theme.colors.card;
+    document.getElementById('customAccent').value = theme.colors.accent;
+    document.getElementById('customText').value = theme.colors.text;
+    document.getElementById('customBorder').value = theme.colors.border;
+    document.getElementById('customHover').value = theme.colors.hover;
+    document.getElementById('customSecondary').value = theme.colors.secondary;
+    document.getElementById('customSuccess').value = theme.colors.success;
+    document.getElementById('customError').value = theme.colors.error;
+    
+    updateThemePreview();
+  }
+}
+
+async function deleteCustomTheme(themeName) {
+  const { customThemes = [] } = await chrome.storage.local.get('customThemes');
+  const updatedThemes = customThemes.filter(t => t.name !== themeName);
+  
+  await chrome.storage.local.set({ customThemes: updatedThemes });
+  loadCustomThemeList();
+  updateThemeDropdown();
+  
+  // If the deleted theme was currently selected, revert to default
+  const { theme: currentTheme } = await chrome.storage.local.get('theme');
+  if (currentTheme === themeName) {
+    const manifest = chrome.runtime.getManifest();
+    const defaultTheme = manifest.theme_colors[0].name;
+    await chrome.storage.local.set({ theme: defaultTheme });
+    applyTheme(manifest.theme_colors[0].colors);
+  }
+  
+  showSuccess(`Theme "${themeName}" deleted`);
+}
+
+async function saveCustomTheme() {
+  const name = document.getElementById('customThemeName').value.trim();
+  if (!name) {
+    showError('Please enter a theme name');
+    return;
+  }
+
+  const theme = {
+    name,
+    colors: {
+      bg: document.getElementById('customBg').value,
+      card: document.getElementById('customCard').value,
+      accent: document.getElementById('customAccent').value,
+      text: document.getElementById('customText').value,
+      border: document.getElementById('customBorder').value,
+      hover: document.getElementById('customHover').value,
+      secondary: document.getElementById('customSecondary').value,
+      success: document.getElementById('customSuccess').value,
+      error: document.getElementById('customError').value
+    }
+  };
+
+  const { customThemes: existingThemes = [] } = await chrome.storage.local.get('customThemes');
+  
+  if (isEditingTheme) {
+    const updatedThemes = existingThemes.map(t => 
+      t.name === currentEditingThemeName ? theme : t
+    );
+
+    if (document.getElementById('theme').value === theme.name) {
+      applyTheme(updatedThemes.find(t => t.name === theme.name).colors);
+    }
+    await chrome.storage.local.set({ customThemes: updatedThemes });
+  } else {
+    if (existingThemes.some(t => t.name === name)) {
+      showError('A theme with this name already exists');
+      return;
+    }
+    await chrome.storage.local.set({ customThemes: [...existingThemes, theme] });
+  }
+
+  // Update theme dropdown and list
+  await updateThemeDropdown();
+  loadCustomThemeList();
+  
+  showSuccess(`Theme "${name}" saved successfully!`);
+  closeCustomThemeModal(); // Add this line to close the popup
+  isEditingTheme = false;
+  currentEditingThemeName = '';
+}
+
+// Update your existing updateThemeDropdown function to include custom themes
+async function updateThemeDropdown() {
+  const themeSelect = document.getElementById('theme');
+  const { customThemes = [], theme: currentTheme } = await chrome.storage.local.get(['customThemes', 'theme']);
+  
+  // Save current selection
+  const selectedTheme = themeSelect.value;
+  
+  // Clear and rebuild options
+  themeSelect.innerHTML = '';
+  
+  // Add default themes
+  const manifest = chrome.runtime.getManifest();
+  manifest.theme_colors.forEach(theme => {
+    const option = document.createElement('option');
+    option.value = theme.name;
+    option.textContent = theme.name;
+    themeSelect.appendChild(option);
+  });
+  
+  // Add custom themes
+  customThemes.forEach(theme => {
+    const option = document.createElement('option');
+    option.value = theme.name;
+    option.textContent = `${theme.name} ★`;
+    option.style.fontWeight = 'bold';
+    themeSelect.appendChild(option);
+  });
+  
+  // Restore selection if still available
+  const availableThemes = [...manifest.theme_colors, ...customThemes];
+  if (availableThemes.some(t => t.name === selectedTheme)) {
+    themeSelect.value = selectedTheme;
+  } else if (currentTheme && availableThemes.some(t => t.name === currentTheme)) {
+    themeSelect.value = currentTheme;
+  } else if (manifest.theme_colors.length > 0) {
+    themeSelect.value = manifest.theme_colors[0].name;
+  }
+}
+
+async function validateAndApplyTheme(themeName) {
+  const manifest = chrome.runtime.getManifest();
+  const { customThemes = [] } = await chrome.storage.local.get('customThemes');
+  
+  const builtInTheme = manifest.theme_colors.find(t => t.name === themeName);
+  if (builtInTheme) {
+    await chrome.storage.local.set({ theme: themeName });
+    applyTheme(builtInTheme.colors);
+    return true;
+  }
+  
+  const customTheme = customThemes.find(t => t.name === themeName);
+  if (customTheme) {
+    await chrome.storage.local.set({ theme: themeName });
+    applyTheme(customTheme.colors);
+    return true;
+  }
+  
+  return false;
 }
 
 const categoryModal = document.getElementById('categoryModal');
@@ -408,6 +1055,54 @@ manageCategoriesModal.addEventListener('click', (e) => {
   }
 });
 
+buttonSearch.addEventListener('input', () => {
+  renderButtons(allButtons);
+});
+
+buttonSearchMode.addEventListener('change', () => {
+  renderButtons(allButtons);
+});
+
+function editButton(index) {
+  currentlyEditingIndex = index;
+  chrome.storage.local.get('buttons', (result) => {
+    const buttons = result.buttons || [];
+    const button = buttons[index];
+    
+    if (button) {
+      editTitle.value = button.title;
+      editUrl.value = button.url;
+      editIconPreview.src = button.iconBase64;
+      editIcon.value = '';
+      
+      editModal.classList.add('active');
+      editTitle.focus();
+    }
+  });
+}
+
+function duplicateButton(index) {
+  chrome.storage.local.get('buttons', (result) => {
+    const buttons = result.buttons || [];
+    const buttonToDuplicate = buttons[index];
+    
+    if (buttonToDuplicate) {
+      const newButton = {
+        ...buttonToDuplicate,
+        id: generateId(),
+        title: `${buttonToDuplicate.title} (Copy)`
+      };
+      
+      const newButtons = [...buttons];
+      newButtons.splice(index + 1, 0, newButton);
+      
+      chrome.storage.local.set({ buttons: newButtons }, () => {
+        renderButtons(newButtons);
+      });
+    }
+  });
+}
+
 function showError(message) {
   const icon = document.getElementById('statusIcon');
   const msg = document.getElementById('statusMessage');
@@ -487,7 +1182,15 @@ function toggleQuickAccess(button) {
 }
 
 buttonList.addEventListener('click', (e) => {
-  if (e.target.classList.contains("assign-btn")) {
+  if (e.target.classList.contains("edit-btn")) {
+    const index = parseInt(e.target.dataset.index);
+    editButton(index);
+  } 
+  else if (e.target.classList.contains("duplicate-btn")) {
+    const index = parseInt(e.target.dataset.index);
+    duplicateButton(index);
+  }
+  else if (e.target.classList.contains("assign-btn")) {
     toggleQuickAccess(e.target);
   }
   else if (e.target.classList.contains('remove-btn')) {
@@ -849,6 +1552,115 @@ dropZone.addEventListener('drop', (e) => {
 
 document.getElementById('exportBtn').addEventListener('click', exportSettings);
 document.getElementById('importBtn').addEventListener('click', importSettings);
+document.getElementById('createCustomThemeBtn').addEventListener('click', openCustomThemeCreator);
+document.getElementById('cancelCustomTheme').addEventListener('click', closeCustomThemeModal);
+document.getElementById('saveCustomTheme').addEventListener('click', saveCustomTheme);
+document.querySelectorAll('.theme-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.theme-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    
+    document.querySelectorAll('.theme-tab-content').forEach(content => {
+      content.classList.remove('active');
+    });
+    
+    document.getElementById(`${tab.dataset.tab}ThemeTab`).classList.add('active');
+  });
+});
+
+colorInputs.forEach(id => {
+  document.getElementById(id).addEventListener('input', updateThemePreview);
+});
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === 'shortcutsUpdated') {
+    renderShortcuts();
+  }
+});
+saveEdit.addEventListener('click', () => {
+  const title = editTitle.value.trim();
+  const url = editUrl.value.trim();
+  const iconFile = editIcon.files[0];
+  
+  if (!title) {
+    showError('Button title is required');
+    return;
+  }
+  
+  if (!url) {
+    showError('URL is required');
+    return;
+  }
+  
+  try {
+    new URL(url);
+  } catch (e) {
+    showError('Please enter a valid URL');
+    return;
+  }
+  
+  chrome.storage.local.get('buttons', (result) => {
+    const buttons = result.buttons || [];
+    
+    const updateButton = (iconBase64) => {
+      const newButtons = [...buttons];
+      newButtons[currentlyEditingIndex] = {
+        ...newButtons[currentlyEditingIndex],
+        title,
+        url,
+        iconBase64: iconBase64 || newButtons[currentlyEditingIndex].iconBase64
+      };
+      
+      chrome.storage.local.set({ buttons: newButtons }, () => {
+        renderButtons(newButtons);
+        editModal.classList.remove('active');
+      });
+    };
+    
+    if (iconFile) {
+      const reader = new FileReader();
+      reader.onload = (e) => updateButton(e.target.result);
+      reader.readAsDataURL(iconFile);
+    } else {
+      updateButton();
+    }
+  });
+});
+
+cancelEdit.addEventListener('click', () => {
+  editModal.classList.remove('active');
+});
+
+editIcon.addEventListener('change', (e) => {
+  if (e.target.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      editIconPreview.src = e.target.result;
+    };
+    reader.readAsDataURL(e.target.files[0]);
+  }
+});
+
+editIconDropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  editIconDropZone.classList.add('drag-over');
+});
+
+editIconDropZone.addEventListener('dragleave', () => {
+  editIconDropZone.classList.remove('drag-over');
+});
+
+editIconDropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  editIconDropZone.classList.remove('drag-over');
+  
+  const files = e.dataTransfer.files;
+  if (files.length && files[0].type.startsWith('image/')) {
+    editIcon.files = files;
+    const event = new Event('change');
+    editIcon.dispatchEvent(event);
+  }
+});
 
 loadButtons();
 loadThemeOptions();

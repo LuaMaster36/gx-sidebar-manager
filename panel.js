@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let categories = [];
   let quickAccess = {};
   let selectedCategory = 'All';
+  let activeShortcutKeys = [];
+  const validShortcutKeys = new Set(['Control', 'Shift', 'Alt', 'Meta']);
   
   async function getSpeedDial() {
     return new Promise((resolve) => {
@@ -48,34 +50,44 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderButtons() {
-    container.innerHTML = '';
+  container.innerHTML = '';
 
-    let filteredButtons = buttons;
+  let filteredButtons = buttons;
+  
+  if (selectedCategory !== 'All') {
+    filteredButtons = filteredButtons.filter(btn => btn.category === selectedCategory);
+  }
+  
+  const searchTerm = searchInput.value.toLowerCase();
+  if (searchTerm) {
+    const mode = searchMode.value;
+    filteredButtons = filteredButtons.filter(btn => 
+      mode === 'name' 
+        ? btn.title.toLowerCase().includes(searchTerm)
+        : btn.url.toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  if (!filteredButtons || filteredButtons.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <h3>No Buttons Found</h3>
+        <p>Try a different search or category</p>
+      </div>
+    `;
+    return;
+  }
+
+  chrome.storage.local.get(['shortcutAssignments'], (result) => {
+    container.innerHTML = '';
     
-    if (selectedCategory !== 'All') {
-      filteredButtons = filteredButtons.filter(btn => btn.category === selectedCategory);
-    }
+    const assignments = result.shortcutAssignments || {};
     
-    const searchTerm = searchInput.value.toLowerCase();
-    if (searchTerm) {
-      const mode = searchMode.value;
-      filteredButtons = filteredButtons.filter(btn => 
-        mode === 'name' 
-          ? btn.title.toLowerCase().includes(searchTerm)
-          : btn.url.toLowerCase().includes(searchTerm)
-      );
-    }
-    
-    if (!filteredButtons || filteredButtons.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <h3>No Buttons Found</h3>
-          <p>Try a different search or category</p>
-        </div>
-      `;
-      return;
-    }
-    
+    const buttonSlots = {};
+    Object.entries(assignments).forEach(([buttonId, slot]) => {
+      buttonSlots[buttonId] = slot;
+    });
+
     filteredButtons.forEach(button => {
       const btnElement = document.createElement('div');
       btnElement.className = 'button';
@@ -95,11 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ? button.url.substring(0, maxUrlLength) + '...' 
         : button.url;
 
-      const isSlot1 = Object.values(quickAccess).includes(button.id) && 
-                     Object.keys(quickAccess).find(key => quickAccess[key] === button.id) === '1';
-      const isSlot2 = Object.values(quickAccess).includes(button.id) && 
-                     Object.keys(quickAccess).find(key => quickAccess[key] === button.id) === '2';
-      
       btnElement.innerHTML = `
         <img src="${button.iconBase64}" alt="${button.title}">
         <div class="button-info">
@@ -107,11 +114,21 @@ document.addEventListener('DOMContentLoaded', () => {
           <small title="${button.url}">${displayUrl}</small>
         </div>
         <div class="button-mode">${modeText}</div>
-        <div class="quick-access-indicators">
-          ${isSlot1 ? '<span class="quick-indicator">1</span>' : ''}
-          ${isSlot2 ? '<span class="quick-indicator">2</span>' : ''}
-        </div>
       `;
+
+      // Only add slot indicator if this button has an assignment
+      const assignedSlot = buttonSlots[button.id];
+      if (assignedSlot) {
+        const indicators = document.createElement('div');
+        indicators.className = 'quick-access-indicators';
+        
+        const slotBadge = document.createElement('span');
+        slotBadge.className = 'quick-indicator';
+        slotBadge.textContent = assignedSlot;
+        
+        indicators.appendChild(slotBadge);
+        btnElement.appendChild(indicators);
+      }
       
       btnElement.addEventListener('click', () => {
         handleButtonClick(button);
@@ -119,7 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       container.appendChild(btnElement);
     });
-  }
+  });
+}
 
   function handleButtonClick(button) {
     switch (button.mode) {
@@ -209,6 +227,11 @@ document.addEventListener('DOMContentLoaded', () => {
       renderButtons();
     }
     if (changes.theme) {
+      renderTheme();
+      renderButtons();
+      renderCategories();
+    }
+    if (changes.shortcutAssignments) {
       renderTheme();
       renderButtons();
       renderCategories();

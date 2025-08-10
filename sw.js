@@ -1,10 +1,50 @@
 console.log("Service Worker starting...");
+const MAX_SHORTCUTS = 3;
+const shortcutAssignments = new Map();
+
+let lastKnownShortcuts = {};
 
 let keepAlive = () => {
   chrome.runtime.getPlatformInfo(() => {});
   setTimeout(keepAlive, 10000);
 };
 keepAlive();
+
+async function initShortcuts() {
+  const { shortcuts = {}, buttons = [] } = await chrome.storage.local.get(['shortcuts', 'buttons']);
+  shortcutAssignments.clear();
+  
+  Object.entries(shortcuts).forEach(([buttonId, shortcut]) => {
+    if (buttonId === '_execute_sidebar_action') return;
+    
+    const commandName = getCommandNameForShortcut(shortcut);
+    if (commandName) {
+      shortcutAssignments.set(commandName, buttonId);
+    }
+  });
+}
+
+function getCommandNameForShortcut(shortcut) {
+  const match = shortcut.match(/(\d+)$/);
+  return match ? `custom_shortcut_${match[1]}` : null;
+}
+
+chrome.commands.onCommand.addListener(async (command) => {
+  const slot = command.replace('custom_shortcut_', '');
+  const { shortcutAssignments = {}, buttons = [] } = await chrome.storage.local.get(['shortcutAssignments', 'buttons']);
+  
+  const buttonId = Object.entries(shortcutAssignments).find(
+    ([id, assignedSlot]) => assignedSlot.toString() === slot
+  )?.[0];
+
+  if (buttonId) {
+    const button = buttons.find(b => b.id === buttonId);
+    if (button) {
+      handleButtonAction(button);
+    }
+  }
+});
+
 
 const isStartPage = (url) => {
   return (
@@ -39,6 +79,61 @@ function applyThemeToAllWindows(themeName) {
   }
 }
 
+async function updateCommandShortcuts(shortcuts) {
+  const commands = {};
+  
+  // Create a reverse mapping of shortcuts to button IDs
+  const shortcutToButton = {};
+  Object.entries(shortcuts).forEach(([buttonId, shortcut]) => {
+    shortcutToButton[shortcut] = buttonId;
+  });
+
+  // Update commands based on the manifest definitions
+  const manifest = chrome.runtime.getManifest();
+  if (manifest.commands) {
+    Object.entries(manifest.commands).forEach(([name, def]) => {
+      if (name.startsWith('custom_shortcut_')) {
+        const slot = name.replace('custom_shortcut_', '');
+        const shortcut = def.suggested_key?.default;
+        if (shortcut && shortcutToButton[shortcut]) {
+          commands[name] = { shortcut };
+        }
+      }
+    });
+  }
+  
+  if (Object.keys(commands).length > 0) {
+    await chrome.commands.update(commands);
+  }
+}
+
+async function getCurrentCommandShortcuts() {
+  return new Promise((resolve) => {
+    chrome.commands.getAll(commands => {
+      const shortcuts = {
+        sidebar: null,
+        custom: {}
+      };
+      
+      commands.forEach(command => {
+        if (command.name === '_execute_action') {
+          shortcuts.sidebar = {
+            key: command.shortcut,
+            name: command.name
+          };
+        } else if (command.name.startsWith('custom_shortcut_')) {
+          const slot = command.name.replace('custom_shortcut_', '');
+          shortcuts.custom[slot] = {
+            key: command.shortcut,
+            name: command.name
+          };
+        }
+      });
+      resolve(shortcuts);
+    });
+  });
+}
+
 async function getSpeedDial() {
   return new Promise((resolve) => {
     chrome.storage.local.get('speedDial', (result) => {
@@ -47,15 +142,22 @@ async function getSpeedDial() {
   });
 }
 
-function initSidebar() {
+async function initSidebar() {
   try {
     if (typeof chrome.sidebarAction === 'undefined') {
       console.warn("sidebarAction API not available");
       return;
     }
 
-    console.log("Initializing sidebar...");
+    const { sidebarShortcut } = await chrome.storage.local.get('sidebarShortcut');
+    const currentShortcuts = await getCurrentCommandShortcuts();
     
+    console.log("Initializing sidebar...");
+
+    if (sidebarShortcut !== currentShortcuts.sidebar) {
+      await chrome.storage.local.set({ sidebarShortcut: currentShortcuts.sidebar });
+    }
+
     chrome.sidebarAction.onClicked.addListener(() => {
       console.log("Sidebar clicked");
       chrome.storage.local.get({ buttons: [] }, ({ buttons = [] }) => {
@@ -80,13 +182,36 @@ function initSidebar() {
       });
     });
 
-    chrome.storage.onChanged.addListener(() => {
+    chrome.storage.onChanged.addListener(async (changes) => {
       chrome.storage.local.get('buttons', ({ buttons = [] }) => {
         const lastBtn = buttons[buttons.length - 1];
         chrome.sidebarAction.setTitle({
           title: lastBtn?.title || "Sidebar Manager"
         });
       });
+      if (changes.shortcuts) {
+        initShortcuts();
+        updateCommandShortcuts(changes.shortcuts.newValue || {});
+        const currentShortcuts = await getCurrentCommandShortcuts();
+        const { shortcuts = {} } = await chrome.storage.local.get('shortcuts');
+        const { sidebarShortcut } = await chrome.storage.local.get('sidebarShortcut');
+
+        if (sidebarShortcut !== currentShortcuts.sidebar) {
+          await chrome.storage.local.set({ sidebarShortcut: currentShortcuts.sidebar });
+        }
+
+        for (const [buttonId, oldShortcut] of Object.entries(shortcuts)) {
+          const slot = oldShortcut.match(/(\d+)$/)?.[1];
+          if (slot && currentShortcuts[slot] && currentShortcuts[slot].key !== oldShortcut) {
+            shortcuts[buttonId] = currentShortcuts[slot].key;
+          }
+        }
+        
+        await chrome.storage.local.set({ shortcuts });
+          }
+      if (changes.theme) {
+        applyThemeToAllWindows(changes.theme.newValue);
+      }
     });
 
   } catch (e) {
@@ -122,7 +247,6 @@ chrome.runtime.onStartup.addListener(() => {
   initSpeedDial();
 });
 
-// Message handling
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'fetchFavicon') {
     fetchFavicon(request.url).then(icon => {
@@ -151,68 +275,37 @@ chrome.storage.onChanged.addListener((changes) => {
   }
 });
 
-function handleQuickAccess(slot) {
-  chrome.storage.local.get(['buttons', 'quickAccess'], (result) => {
-    const quickAccess = result.quickAccess || {};
-    const buttonId = quickAccess[slot];
-    
-    if (!buttonId) {
-      console.log(`No button assigned to quick access slot ${slot}`);
-      return;
-    }
-    
-    const buttons = result.buttons || [];
-    const button = buttons.find(b => b.id === buttonId);
-    
-    if (button) {
-      switch (button.mode) {
-        case 'tab':
-          chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-            if (tabs[0]) {
-              const speedDial = await getSpeedDial();
-              if (isStartPage(tabs[0].url) && speedDial) {
-                chrome.tabs.update(tabs[0].id, { url: button.url });
-              } else {
-                chrome.tabs.create({ url: button.url });
-              }
-            } else {
-              chrome.tabs.create({ url: button.url });
-            }
-          });
-          break;
-        case 'current':
-          chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            if (tabs[0]) chrome.tabs.update(tabs[0].id, { url: button.url });
-          });
-          break;
-        case 'popup':
-          chrome.windows.create({
-            url: button.url,
-            type: 'popup',
-            width: 800,
-            height: 600
-          });
-          break;
-      }
-    } else {
-      console.warn(`Button assigned to slot ${slot} not found`);
-    }
-  });
-}
-
-chrome.commands.onCommand.addListener((command) => {
-  switch (command) {
-    case 'open-sidebar':
-      browser.sidebarAction.open();
+function handleButtonAction(button) {
+  switch (button.mode) {
+    case 'tab':
+      chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+        if (tabs[0]) {
+          const speedDial = await getSpeedDial();
+          if (isStartPage(tabs[0].url) && speedDial) {
+            chrome.tabs.update(tabs[0].id, { url: button.url });
+          } else {
+            chrome.tabs.create({ url: button.url });
+          }
+        } else {
+          chrome.tabs.create({ url: button.url });
+        }
+      });
       break;
-    case 'quick-access-1':
-      handleQuickAccess(1);
+    case 'current':
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) chrome.tabs.update(tabs[0].id, { url: button.url });
+      });
       break;
-    case 'quick-access-2':
-      handleQuickAccess(2);
+    case 'popup':
+      chrome.windows.create({
+        url: button.url,
+        type: 'popup',
+        width: 800,
+        height: 600
+      });
       break;
   }
-});
+}
 
 async function fetchFavicon(url) {
   try {
@@ -259,3 +352,14 @@ function blobToDataURL(blob) {
     reader.readAsDataURL(blob);
   });
 }
+
+setInterval(async () => {
+  const currentShortcuts = await getCurrentCommandShortcuts();
+  
+  if (JSON.stringify(lastKnownShortcuts) !== JSON.stringify(currentShortcuts)) {
+    lastKnownShortcuts = currentShortcuts;
+    chrome.runtime.sendMessage({ action: 'shortcutsUpdated' });
+  }
+}, 1000);
+
+initShortcuts();

@@ -131,7 +131,7 @@
   }
   
   input, select, button, .file-label {
-    width: 100%;
+    width: 95%;
     padding: 12px 15px;
     font-size: 15px;
     border-radius: 10px;
@@ -413,7 +413,7 @@
   }
   
   .modal-body input {
-    width: 100%;
+    width: 95%;
     margin-bottom: 20px;
   }
   
@@ -643,7 +643,343 @@
     flex: 1;
     margin: 0 5px;
   }
+
+  .search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .search-container input {
+    padding: 10px 15px;
+    border-radius: 30px;
+    border: 2px solid var(--gx-border);
+    background: var(--gx-card);
+    color: var(--gx-text);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+
+  .search-container input:focus {
+    border-color: var(--gx-accent);
+    box-shadow: 0 0 0 3px rgba(var(--gx-accent-rgb), 0.3);
+  }
+
+  .search-container select {
+    padding: 8px 15px;
+    border-radius: 30px;
+    border: 2px solid var(--gx-border);
+    background: var(--gx-card);
+    color: var(--gx-text);
+    cursor: pointer;
+    outline: none;
+    font-size: 13px;
+  }
+
+  .search-container select:hover {
+    border-color: var(--gx-accent);
+  }
+  .shortcut-input {
+    margin-top: 10px;
+  }
+
+  .shortcut-display {
+    background: var(--gx-card);
+    color: var(--gx-text);
+    border: 2px solid var(--gx-border);
+    border-radius: 10px;
+    padding: 10px 15px;
+    font-family: monospace;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    min-width: 120px;
+    display: inline-block;
+  }
+
+  .shortcut-display:hover {
+    border-color: var(--gx-accent);
+  }
+
+  .shortcut-display.recording {
+    animation: pulse 1s infinite;
+    border-color: var(--gx-accent);
+  }
+
+  .shortcut-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--gx-card);
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: 2px solid var(--gx-border);
+  }
+
+  .shortcut-item-info {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .shortcut-item-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .shortcut-item-btn {
+    background: var(--gx-bg);
+    border: 2px solid var(--gx-border);
+    color: var(--gx-text);
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  .shortcut-item-btn:hover {
+    border-color: var(--gx-accent);
+  }
   
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(var(--gx-accent-rgb), 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(var(--gx-accent-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--gx-accent-rgb), 0); }
+  }
+
+  .info-small {
+    color: var(--gx-secondary);
+    font-size: 12px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .color-input {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .color-picker-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .color-picker-container input[type="color"] {
+    width: 40px;
+    height: 40px;
+    padding: 2px;
+    border: 2px solid var(--gx-border);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .theme-preview {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: var(--preview-bg, #1e1e2e);
+    border: 2px solid var(--preview-border, #4a4a7a);
+  }
+
+  .preview-card {
+    background-color: var(--preview-card, #2d2d44);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+
+  .preview-header {
+    color: var(--preview-accent, #ff79c6);
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .preview-button {
+    background-color: var(--preview-accent, #ff79c6);
+    color: var(--preview-card, #2d2d44);
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+
+  /* Add these styles to your existing CSS */
+  .theme-tab {
+    padding: 8px 15px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--gx-text);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .theme-tab.active {
+    border-bottom-color: var(--gx-accent);
+    color: var(--gx-accent);
+  }
+
+  .theme-tab-content {
+    display: none;
+    flex: 1;
+    overflow: hidden;
+    flex-direction: column;
+  }
+
+  .theme-tab-content.active {
+    display: flex;
+  }
+
+  .color-input {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .color-input input[type="color"] {
+    width: 100%;
+    height: 70px;
+    cursor: pointer;
+    border: 2px solid var(--gx-border);
+    border-radius: 6px;
+  }
+
+  .color-input label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gx-secondary);
+  }
+
+  .theme-item {
+    background: var(--gx-bg);
+    border-radius: 8px;
+    padding: 12px;
+    border: 2px solid var(--gx-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .theme-item:hover {
+    border-color: var(--gx-accent);
+  }
+
+  .theme-item-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .theme-item-btn {
+    background: var(--gx-bg);
+    border: 2px solid var(--gx-border);
+    color: var(--gx-text);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .edit-btn, .duplicate-btn {
+    background: transparent;
+    border: none;
+    color: var(--gx-secondary);
+    font-weight: 700;
+    font-size: 18px;
+    cursor: pointer;
+    user-select: none;
+    padding: 0 10px;
+    flex-shrink: 0;
+    height: 30px;
+    width: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .edit-btn:hover {
+    color: var(--gx-accent);
+    background: rgba(var(--gx-accent-rgb), 0.1);
+    border-radius: 50%;
+  }
+
+  .duplicate-btn:hover {
+    color: var(--gx-success);
+    background: rgba(var(--gx-success-rgb), 0.1);
+    border-radius: 50%;
+  }
+
+  .theme-item-btn:hover {
+    border-color: var(--gx-accent);
+  }
+
+  .theme-item-btn.delete {
+    color: var(--gx-error);
+    border-color: var(--gx-error);
+  }
+
+  .theme-preview-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gx-accent) var(--gx-card);
+  }
+
+  .theme-preview-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .theme-preview-container::-webkit-scrollbar-thumb {
+    background: var(--gx-accent);
+    border-radius: 3px;
+  }
+
+  .theme-preview-container::-webkit-scrollbar-track {
+    background: var(--gx-card);
+    border-radius: 3px;
+  }
+
+  .preview-text {
+    color: var(--preview-text, #e0e0ff);
+    margin-top: 10px;
+  }
+
+  .sync-status {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: var(--gx-card);
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #forceSync {
+    background: var(--gx-secondary);
+    border: none;
+    border-radius: 12px;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -723,8 +1059,11 @@
 
     <div class="form-group">
       <label for="theme">Theme</label>
-      <select id="theme" class="theme-select">
-      </select>
+      <div style='display: flex;'>
+        <select id="theme" class="theme-select">
+        </select>
+        <button id="createCustomThemeBtn" class="remove-btn" title ='Create Custom Theme'>+</button>
+      </div>
     </div>
 
     <div class="form-group">
@@ -743,6 +1082,25 @@
       <button type="button" id="importBtn" style="flex: 1;">Import Settings</button>
     </div>
 
+    <div class="section-title">Handle Shortcuts</div>
+
+    <div class="form-group">
+      <label>Sidebar Toggle Shortcut</label>
+      <div class="shortcut-input">
+        <button class="shortcut-display" id="sidebarShortcut">Alt+Shift+S</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Button Shortcuts</label>
+      <div id="buttonShortcutsList"></div>
+      <div id="shortcutAssignment" style="display: none; margin-top: 15px;">
+        <select id="shortcutButtonSelect" style="width: 100%; margin-bottom: 10px;"></select>
+        <button id="assignShortcutBtn" style="width: 100%;">Assign Shortcut</button>
+      </div>
+      <small class="info-small">To change the shorctuts go to Opera's shortcut settings</a></small>
+    </div>
+    
     <div class="section-title">Quick Actions</div>
     
     <div class="drop-zone" id="dropZone">
@@ -752,6 +1110,14 @@
     
     <div class="section-title">Manage Buttons</div>
     
+    <div class="search-container" style="margin-bottom: 15px;">
+      <input type="text" id="buttonSearch" placeholder="Search buttons..." autocomplete="off" style="width: 100%;">
+      <select id="buttonSearchMode" style="margin-top: 10px;">
+        <option value="name">By Name</option>
+        <option value="url">By URL</option>
+      </select>
+    </div>
+
     <ul id="buttonList"></ul>
   </div>
 
@@ -785,7 +1151,7 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="confirmModal">
+  <div class="modal-overlay" id="confirmModal" style="z-index: 1005;">
     <div class="modal-content">
       <div class="modal-header">
         <h3 class="modal-title">Confirm</h3>
@@ -801,7 +1167,7 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="errorModal">
+  <div class="modal-overlay" id="errorModal" style="z-index: 1010;">
     <div class="modal-content">
       <div class="modal-body">
         <div class="status-icon" id="statusIcon">⚠️</div>
@@ -809,6 +1175,173 @@
       </div>
       <div class="modal-footer">
         <button class="modal-btn btn-primary" id="closeError">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="customThemeModal">
+    <div class="modal-content" style="max-width: 500px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <h3 class="modal-title">Custom Themes</h3>
+      </div>
+      <div class="modal-body" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+        <div id="themeCreatorTabs" style="display: flex; border-bottom: 2px solid var(--gx-border); margin-bottom: 15px;">
+          <button class="theme-tab active" data-tab="create">Create New</button>
+          <button class="theme-tab" data-tab="manage">Manage Themes</button>
+        </div>
+        
+        <!-- Create New Theme Tab -->
+        <div id="createThemeTab" class="theme-tab-content active">
+          <div class="form-group">
+            <label for="customThemeName">Theme Name</label>
+            <input type="text" id="customThemeName" placeholder="My Awesome Theme" required>
+          </div>
+          
+          <div class="color-grid" style="grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <!-- Background -->
+            <div class="color-input">
+              <label for="customBg">Background</label>
+              <input type="color" id="customBg" value="#1e1e2e" title="Main background color">
+            </div>
+            
+            <!-- Card -->
+            <div class="color-input">
+              <label for="customCard">Card</label>
+              <input type="color" id="customCard" value="#2d2d44" title="Container backgrounds">
+            </div>
+            
+            <!-- Accent -->
+            <div class="color-input">
+              <label for="customAccent">Accent</label>
+              <input type="color" id="customAccent" value="#ff79c6" title="Primary action color">
+            </div>
+            
+            <!-- Text -->
+            <div class="color-input">
+              <label for="customText">Text</label>
+              <input type="color" id="customText" value="#e0e0ff" title="Primary text color">
+            </div>
+            
+            <!-- Border -->
+            <div class="color-input">
+              <label for="customBorder">Border</label>
+              <input type="color" id="customBorder" value="#4a4a7a" title="Borders and dividers">
+            </div>
+            
+            <!-- Hover -->
+            <div class="color-input">
+              <label for="customHover">Hover</label>
+              <input type="color" id="customHover" value="#3a3a5a" title="Hover states">
+            </div>
+            
+            <!-- Secondary -->
+            <div class="color-input">
+              <label for="customSecondary">Secondary</label>
+              <input type="color" id="customSecondary" value="#bd93f9" title="Secondary actions">
+            </div>
+            
+            <!-- Success -->
+            <div class="color-input">
+              <label for="customSuccess">Success</label>
+              <input type="color" id="customSuccess" value="#50fa7b" title="Success states">
+            </div>
+            
+            <!-- Error -->
+            <div class="color-input">
+              <label for="customError">Error</label>
+              <input type="color" id="customError" value="#ff5555" title="Error states">
+            </div>
+          </div>
+          
+          <div class="theme-preview-container" style="flex: 1; overflow-y: auto; margin-top: 15px; border: 2px solid var(--gx-border); border-radius: 10px; padding: 15px;">
+            <h4 style="margin-top: 0; color: var(--gx-accent);">Live Preview</h4>
+            <div id="fullPagePreview" style="min-height: 500px; padding: 15px; border-radius: 8px;">
+              <!-- This will be populated with a preview of the actual extension UI -->
+              <div style="background: var(--preview-bg, #1e1e2e); color: var(--preview-text, #e0e0ff); padding: 20px; border-radius: 8px;">
+                <h3 style="color: var(--preview-accent, #ff79c6); margin-top: 0;">GX Sidebar Manager</h3>
+                
+                <div style="background: var(--preview-card, #2d2d44); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--preview-border, #4a4a7a);">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <button style="background: var(--preview-accent, #ff79c6); color: var(--preview-card, #2d2d44); border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold;">Primary Button</button>
+                    <button style="background: var(--preview-secondary, #bd93f9); color: var(--preview-card, #2d2d44); border: none; padding: 8px 15px; border-radius: 5px;">Secondary Button</button>
+                  </div>
+                  
+                  <div style="background: var(--preview-bg, #1e1e2e); padding: 10px; border-radius: 5px; border: 1px solid var(--preview-border, #4a4a7a); margin-bottom: 10px;">
+                    <p style="margin: 0;">Sample content card with text</p>
+                  </div>
+                  
+                  <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex: 1; background: var(--preview-success, #50fa7b); color: var(--preview-card, #2d2d44); padding: 5px; border-radius: 4px; text-align: center; font-size: 12px;">Success</div>
+                    <div style="flex: 1; background: var(--preview-error, #ff5555); color: var(--preview-card, #2d2d44); padding: 5px; border-radius: 4px; text-align: center; font-size: 12px;">Error</div>
+                  </div>
+                  
+                  <div style="background: var(--preview-hover, #3a3a5a); padding: 10px; border-radius: 5px; margin-top: 10px;">
+                    <p style="margin: 0;">Hover state example</p>
+                  </div>
+                </div>
+                
+                <div style="background: var(--preview-card, #2d2d44); padding: 15px; border-radius: 8px; border: 1px solid var(--preview-border, #4a4a7a);">
+                  <h4 style="margin-top: 0; color: var(--preview-accent, #ff79c6);">Form Elements</h4>
+                  <input type="text" placeholder="Sample input" style="width: 100%; padding: 8px; margin-bottom: 10px; background: var(--preview-bg, #1e1e2e); border: 1px solid var(--preview-border, #4a4a7a); color: var(--preview-text, #e0e0ff); border-radius: 5px;">
+                  <select style="width: 100%; padding: 8px; background: var(--preview-bg, #1e1e2e); border: 1px solid var(--preview-border, #4a4a7a); color: var(--preview-text, #e0e0ff); border-radius: 5px; margin-bottom: 10px;">
+                    <option>Sample dropdown</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Manage Themes Tab -->
+        <div id="manageThemeTab" class="theme-tab-content">
+          <div class="theme-list-container" style="flex: 1; overflow-y: auto;">
+            <div id="customThemeList" style="display: grid; gap: 10px;">
+              <!-- Custom themes will be listed here -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn btn-secondary" id="cancelCustomTheme">Cancel</button>
+        <button class="modal-btn btn-primary" id="saveCustomTheme">Save Theme</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Button</h3>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="editTitle">Button Title</label>
+          <input type="text" id="editTitle" required placeholder="My Button" />
+        </div>
+        
+        <div class="form-group">
+          <label for="editUrl">URL</label>
+          <input type="url" id="editUrl" required placeholder="https://example.com" />
+        </div>
+        
+        <div class="form-group">
+          <label>Button Icon</label>
+          <label class="file-label" id="editIconDropZone">
+            Drag & drop image here or click to select
+            <input type="file" id="editIcon" accept="image/png, image/jpeg" />
+          </label>
+          
+          <div class="preview-container">
+            <span class="preview-label">Preview:</span>
+            <div class="icon-preview">
+              <img id="editIconPreview" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn btn-secondary" id="cancelEdit">Cancel</button>
+        <button class="modal-btn btn-primary" id="saveEdit">Save</button>
       </div>
     </div>
   </div>
